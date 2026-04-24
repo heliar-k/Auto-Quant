@@ -40,6 +40,8 @@ class TrendMtfConfluence(IStrategy):
     def populate_indicators_4h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["ema9"] = ta.EMA(dataframe, timeperiod=9)
         dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
+        dataframe["atr"] = ta.ATR(dataframe, timeperiod=14)
+        dataframe["atr_sma"] = dataframe["atr"].rolling(14).mean()
         return dataframe
 
     @informative("1d")
@@ -55,6 +57,7 @@ class TrendMtfConfluence(IStrategy):
         dataframe.loc[
             (dataframe["close"] > dataframe["ema200_1d"])
             & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
+            & (dataframe["atr_4h"] > dataframe["atr_sma_4h"])
             & (dataframe["rsi"] > 36)
             & (dataframe["rsi"] < 47),
             "enter_long",
