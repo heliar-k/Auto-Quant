@@ -7,22 +7,72 @@ Hypothesis: <what you believe about this asset that this strategy tests. Be spec
 Parent: <another strategy name, or "root" for hypotheses-from-scratch>
 Created: <git commit hash where first introduced — fill in after first commit>
 Status: active
+Uses MTF: <yes | no — declare whether this strategy uses @informative decorators>
 
 This file is a skeleton reference. To create a new strategy:
   1. Copy this file to `user_data/strategies/<YourName>.py`
   2. Rename the class to `<YourName>` (must match filename)
   3. Fill in the docstring fields above
   4. Implement populate_indicators / populate_entry_trend / populate_exit_trend
-  5. Remove this block of instructional text
+  5. Optionally keep the @informative methods (for multi-timeframe) or delete them
+  6. Remove this block of instructional text
 
 File names starting with `_` are ignored by run.py — that's how this
 template stays excluded from backtests.
+
+========================================================================
+MULTI-TIMEFRAME + CROSS-ASSET USAGE (v0.3.0)
+========================================================================
+
+Data is pre-downloaded for three timeframes: 1h (base), 4h, and 1d.
+Five pairs are in the whitelist: BTC/USDT, ETH/USDT, SOL/USDT, BNB/USDT,
+AVAX/USDT. Each strategy is evaluated on ALL five pairs per backtest run;
+run.py reports aggregate + per-pair metrics.
+
+Two affordances are available to enrich strategy signals:
+
+1) HIGHER TIMEFRAMES (same pair, different TF):
+   @informative('4h')
+   def populate_indicators_4h(self, dataframe, metadata):
+       dataframe['rsi'] = ta.RSI(dataframe, 14)
+       return dataframe
+   # Later in populate_indicators: access as dataframe['rsi_4h']
+
+2) CROSS-PAIR (same TF, different pair):
+   @informative('1h', 'BTC/USDT')
+   def populate_indicators_btc(self, dataframe, metadata):
+       dataframe['close_ma'] = ta.SMA(dataframe, 50)
+       return dataframe
+   # Columns come out with the base_quote prefix: dataframe['btc_usdt_close_ma_1h']
+
+3) BOTH (different pair AND different TF):
+   @informative('1d', 'BTC/USDT')
+   def ...: ...  # -> dataframe['btc_usdt_...._1d']
+
+FreqTrade handles the heavy lifting: merges columns into the main dataframe
+with a _{timeframe} suffix (and _{base}_{quote} prefix for cross-pair),
+shifts by 1 period to prevent look-ahead bias, and forward-fills.
+
+**Important asymmetry**: if you reference a specific pair (e.g.
+@informative('1h', 'ETH/USDT')), that pair's data is pulled for EVERY
+backtested pair — including ETH itself, where it becomes redundant with
+the main TF's close. For truly symmetric cross-pair strategies (e.g.
+BTC/ETH price ratio that should be meaningful on BOTH pairs), use
+`informative_pairs()` + `dp.get_pair_dataframe()` with an `if
+metadata['pair'] == ...` branch instead.
+
+Only 1h, 4h, 1d × BTC, ETH, SOL, BNB, AVAX are pre-downloaded. Requesting
+anything else will crash with a missing-data error.
+
+If your strategy doesn't need MTF or cross-pair context, just delete the
+@informative methods and write a single-TF single-pair strategy; run.py
+still runs it across the 5-pair universe and reports per-pair results.
 """
 
 from pandas import DataFrame
 import talib.abstract as ta  # noqa: F401  — available if you want it
 
-from freqtrade.strategy import IStrategy
+from freqtrade.strategy import IStrategy, informative
 
 
 class _Template(IStrategy):
@@ -46,20 +96,50 @@ class _Template(IStrategy):
     ignore_roi_if_entry_signal = False
 
     # Bump this up if your indicators need a longer history to warm up.
+    # When using @informative, include warmup for the slowest indicator across
+    # all timeframes (e.g., SMA200 on 1d needs 200 daily bars).
     startup_candle_count: int = 30
+
+    # ---- OPTIONAL: multi-timeframe via @informative ----
+    # Delete these methods if your strategy is pure 1h.
+    # Keep and modify them if you want higher-TF context.
+
+    @informative("4h")
+    def populate_indicators_4h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        # These run on 4h data. Columns you add here will appear in the main
+        # 1h dataframe with `_4h` suffix (e.g., `dataframe['rsi']` below becomes
+        # `dataframe['rsi_4h']` accessible from populate_indicators).
+        # dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
+        # dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
+        return dataframe
+
+    @informative("1d")
+    def populate_indicators_1d(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        # These run on 1d data. Access as `rsi_1d`, `ema50_1d`, etc. from 1h populate.
+        # Typical use: regime / macro trend filter. SMA200 on 1d = "above 200-day".
+        # dataframe["ema200"] = ta.EMA(dataframe, timeperiod=200)
+        return dataframe
 
     # ---- three methods every strategy must implement ----
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        # Main 1h indicators.
+        # If you kept the @informative methods above, the merged columns
+        # `rsi_4h`, `ema50_4h`, `ema200_1d`, etc. are automatically available here.
+        #
         # Example:
         # dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        # Example:
-        # dataframe.loc[dataframe["rsi"] < 20, "enter_long"] = 1
+        # Example single-TF: dataframe.loc[dataframe["rsi"] < 20, "enter_long"] = 1
+        # Example MTF confluence:
+        # dataframe.loc[
+        #     (dataframe["rsi"] < 20) &                       # 1h oversold
+        #     (dataframe["close"] > dataframe["ema200_1d"]),  # 1d bull regime
+        #     "enter_long",
+        # ] = 1
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        # Example:
-        # dataframe.loc[dataframe["rsi"] > 75, "exit_long"] = 1
+        # Example: dataframe.loc[dataframe["rsi"] > 75, "exit_long"] = 1
         return dataframe
