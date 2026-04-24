@@ -55,7 +55,7 @@ class MeanRevRSI(IStrategy):
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
             (dataframe["close"] > dataframe["ema50_1d"])
-            & (dataframe["rsi_4h"] < 45)
+            & (dataframe["rsi_4h"] < 50)
             & (dataframe["rsi"] < 32)
             & (dataframe["close"] < dataframe["bb_lower"]),
             "enter_long",
