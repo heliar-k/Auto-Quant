@@ -57,7 +57,7 @@ class CrossPairMomentum(IStrategy):
         dataframe.loc[
             (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & (dataframe["roc"] > 6.0)
-            & (dataframe["btc_usdt_roc_1h"] > 5.0)
+            & (dataframe["btc_usdt_roc_1h"] > 4.0)
             & (dataframe["close"] > dataframe["ema50"]),
             "enter_long",
         ] = 1

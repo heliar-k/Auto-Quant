@@ -9,7 +9,7 @@ assets. Per-pair reporting will reveal which pairs revert reliably and which don
 Parent: root
 Created: (set after first commit)
 Status: active
-Uses MTF: yes (1d EMA200 regime filter)
+Uses MTF: yes (1d EMA50 regime filter)
 """
 
 from pandas import DataFrame
@@ -57,5 +57,5 @@ class MeanRevRSI(IStrategy):
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe.loc[dataframe["rsi"] > 70, "exit_long"] = 1
+        dataframe.loc[dataframe["rsi"] > 65, "exit_long"] = 1
         return dataframe
