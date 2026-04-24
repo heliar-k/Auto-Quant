@@ -51,6 +51,7 @@ class CrossPairMomentum(IStrategy):
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["roc"] = ta.ROC(dataframe, timeperiod=20)
         dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
+        dataframe["vol_ma"] = dataframe["volume"].rolling(20).mean()
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
@@ -58,7 +59,8 @@ class CrossPairMomentum(IStrategy):
             (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & (dataframe["roc"] > 7.0)
             & (dataframe["btc_usdt_roc_1h"] > 4.0)
-            & (dataframe["close"] > dataframe["ema50"]),
+            & (dataframe["close"] > dataframe["ema50"])
+            & (dataframe["volume"] > dataframe["vol_ma"]),
             "enter_long",
         ] = 1
         return dataframe
