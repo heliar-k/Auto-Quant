@@ -53,8 +53,7 @@ class TrendMtfConfluence(IStrategy):
         return dataframe
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        macd = ta.MACD(dataframe, fastperiod=12, slowperiod=26, signalperiod=9)
-        dataframe["macd_hist"] = macd["macdhist"]
+        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
@@ -62,16 +61,16 @@ class TrendMtfConfluence(IStrategy):
             (dataframe["close"] > dataframe["ema200_1d"])
             & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & (dataframe["btc_usdt_rsi_1h"] < 70)
-            & (dataframe["macd_hist"] < 0)
-            & (dataframe["macd_hist"] > dataframe["macd_hist"].shift(1)),
+            & (dataframe["rsi"] > 35)
+            & (dataframe["rsi"] < 48),
             "enter_long",
         ] = 1
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
-            (dataframe["ema9_4h"] < dataframe["ema21_4h"])
-            | (dataframe["macd_hist"] > 0),
+            (dataframe["rsi"] > 70)
+            | (dataframe["ema9_4h"] < dataframe["ema21_4h"]),
             "exit_long",
         ] = 1
         return dataframe
