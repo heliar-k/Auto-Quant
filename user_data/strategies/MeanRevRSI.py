@@ -65,5 +65,5 @@ class MeanRevRSI(IStrategy):
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe.loc[dataframe["rsi"] > 65, "exit_long"] = 1
+        dataframe.loc[dataframe["rsi"] > 60, "exit_long"] = 1
         return dataframe
