@@ -56,7 +56,7 @@ class CrossPairMomentum(IStrategy):
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
             (dataframe["ema9_4h"] > dataframe["ema21_4h"])
-            & (dataframe["roc"] > 5.5)
+            & (dataframe["roc"] > 6.0)
             & (dataframe["btc_usdt_roc_1h"] > 4.0)
             & (dataframe["close"] > dataframe["ema50"]),
             "enter_long",
@@ -64,5 +64,5 @@ class CrossPairMomentum(IStrategy):
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe.loc[dataframe["roc"] < 0, "exit_long"] = 1
+        dataframe.loc[dataframe["roc"] < -2, "exit_long"] = 1
         return dataframe
