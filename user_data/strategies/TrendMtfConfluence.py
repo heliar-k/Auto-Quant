@@ -25,7 +25,7 @@ class TrendMtfConfluence(IStrategy):
     can_short = False
 
     minimal_roi = {"0": 100}
-    stoploss = -0.25
+    stoploss = -0.99
 
     trailing_stop = False
     process_only_new_candles = True
@@ -40,7 +40,6 @@ class TrendMtfConfluence(IStrategy):
     def populate_indicators_4h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["ema9"] = ta.EMA(dataframe, timeperiod=9)
         dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
-        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         return dataframe
 
     @informative("1d")
@@ -56,10 +55,8 @@ class TrendMtfConfluence(IStrategy):
         dataframe.loc[
             (dataframe["close"] > dataframe["ema200_1d"])
             & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
-            & (dataframe["rsi_4h"] > 40)
-            & (dataframe["rsi_4h"] < 60)
-            & (dataframe["rsi"] > 36)
-            & (dataframe["rsi"] < 47),
+            & (dataframe["rsi"] > 35)
+            & (dataframe["rsi"] < 48),
             "enter_long",
         ] = 1
         return dataframe
