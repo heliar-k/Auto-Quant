@@ -26,7 +26,7 @@ class CrossPairMomentum(IStrategy):
     can_short = False
 
     minimal_roi = {"0": 100}
-    stoploss = -0.10
+    stoploss = -0.12
 
     trailing_stop = False
     process_only_new_candles = True
@@ -35,26 +35,27 @@ class CrossPairMomentum(IStrategy):
     exit_profit_only = False
     ignore_roi_if_entry_signal = False
 
-    startup_candle_count: int = 30
+    startup_candle_count: int = 50
 
     @informative("1h", "BTC/USDT")
     def populate_indicators_btc(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["roc"] = ta.ROC(dataframe, timeperiod=20)
-        dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
         return dataframe
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["roc"] = ta.ROC(dataframe, timeperiod=20)
+        dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
-            (dataframe["roc"] > 3.0)
-            & (dataframe["btc_usdt_roc_1h"] > 2.0),
+            (dataframe["roc"] > 6.0)
+            & (dataframe["btc_usdt_roc_1h"] > 5.0)
+            & (dataframe["close"] > dataframe["ema50"]),
             "enter_long",
         ] = 1
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe.loc[dataframe["roc"] < 0, "exit_long"] = 1
+        dataframe.loc[dataframe["roc"] < -2, "exit_long"] = 1
         return dataframe
