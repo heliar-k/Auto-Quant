@@ -25,7 +25,7 @@ class TrendMtfConfluence(IStrategy):
     can_short = False
 
     minimal_roi = {"0": 100}
-    stoploss = -0.15
+    stoploss = -0.25
 
     trailing_stop = False
     process_only_new_candles = True
@@ -55,8 +55,8 @@ class TrendMtfConfluence(IStrategy):
         dataframe.loc[
             (dataframe["close"] > dataframe["ema200_1d"])
             & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
-            & (dataframe["rsi"] > 38)
-            & (dataframe["rsi"] < 45),
+            & (dataframe["rsi"] > 36)
+            & (dataframe["rsi"] < 47),
             "enter_long",
         ] = 1
         return dataframe
