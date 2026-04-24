@@ -50,14 +50,16 @@ class MeanRevRSI(IStrategy):
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         bb = ta.BBANDS(dataframe, timeperiod=20, nbdevup=2.0, nbdevdn=2.0)
         dataframe["bb_lower"] = bb["lowerband"]
+        dataframe["vol_ma"] = dataframe["volume"].rolling(20).mean()
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
             (dataframe["close"] > dataframe["ema50_1d"])
             & (dataframe["rsi_4h"] < 45)
-            & (dataframe["rsi"] < 35)
-            & (dataframe["close"] < dataframe["bb_lower"]),
+            & (dataframe["rsi"] < 32)
+            & (dataframe["close"] < dataframe["bb_lower"])
+            & (dataframe["volume"] > dataframe["vol_ma"]),
             "enter_long",
         ] = 1
         return dataframe
