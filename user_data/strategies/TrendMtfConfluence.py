@@ -9,7 +9,7 @@ adapted to crypto 1h.
 Parent: root
 Created: (set after first commit)
 Status: active
-Uses MTF: yes (4h trend + 1d regime + cross-pair BTC guard)
+Uses MTF: yes (4h trend + 1d regime filter)
 """
 
 from pandas import DataFrame
@@ -36,11 +36,6 @@ class TrendMtfConfluence(IStrategy):
 
     startup_candle_count: int = 200
 
-    @informative("1h", "BTC/USDT")
-    def populate_indicators_btc(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
-        return dataframe
-
     @informative("4h")
     def populate_indicators_4h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["ema9"] = ta.EMA(dataframe, timeperiod=9)
@@ -60,7 +55,6 @@ class TrendMtfConfluence(IStrategy):
         dataframe.loc[
             (dataframe["close"] > dataframe["ema200_1d"])
             & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
-            & (dataframe["btc_usdt_rsi_1h"] < 70)
             & (dataframe["rsi"] > 35)
             & (dataframe["rsi"] < 48),
             "enter_long",
