@@ -38,7 +38,7 @@ class MeanRevRSI(IStrategy):
 
     @informative("1d")
     def populate_indicators_1d(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe["ema200"] = ta.EMA(dataframe, timeperiod=200)
+        dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
         return dataframe
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
@@ -49,7 +49,7 @@ class MeanRevRSI(IStrategy):
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
-            (dataframe["close"] > dataframe["ema200_1d"])
+            (dataframe["close"] > dataframe["ema50_1d"])
             & (dataframe["rsi"] < 30)
             & (dataframe["close"] < dataframe["bb_lower"]),
             "enter_long",

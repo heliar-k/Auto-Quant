@@ -10,7 +10,7 @@ every pair (including BTC itself, where it becomes self-referential).
 Parent: root
 Created: (set after first commit)
 Status: active
-Uses MTF: yes (cross-pair BTC data)
+Uses MTF: yes (cross-pair BTC + 4h trend filter)
 """
 
 from pandas import DataFrame
@@ -35,7 +35,13 @@ class CrossPairMomentum(IStrategy):
     exit_profit_only = False
     ignore_roi_if_entry_signal = False
 
-    startup_candle_count: int = 50
+    startup_candle_count: int = 200
+
+    @informative("4h")
+    def populate_indicators_4h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe["ema9"] = ta.EMA(dataframe, timeperiod=9)
+        dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
+        return dataframe
 
     @informative("1h", "BTC/USDT")
     def populate_indicators_btc(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
@@ -49,7 +55,8 @@ class CrossPairMomentum(IStrategy):
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
-            (dataframe["roc"] > 6.0)
+            (dataframe["ema9_4h"] > dataframe["ema21_4h"])
+            & (dataframe["roc"] > 6.0)
             & (dataframe["btc_usdt_roc_1h"] > 5.0)
             & (dataframe["close"] > dataframe["ema50"]),
             "enter_long",
