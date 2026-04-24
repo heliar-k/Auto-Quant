@@ -9,13 +9,13 @@ assets. Per-pair reporting will reveal which pairs revert reliably and which don
 Parent: root
 Created: (set after first commit)
 Status: active
-Uses MTF: no (pure 1h single-pair)
+Uses MTF: yes (1d EMA200 regime filter)
 """
 
 from pandas import DataFrame
 import talib.abstract as ta
 
-from freqtrade.strategy import IStrategy
+from freqtrade.strategy import IStrategy, informative
 
 
 class MeanRevRSI(IStrategy):
@@ -34,7 +34,12 @@ class MeanRevRSI(IStrategy):
     exit_profit_only = False
     ignore_roi_if_entry_signal = False
 
-    startup_candle_count: int = 30
+    startup_candle_count: int = 200
+
+    @informative("1d")
+    def populate_indicators_1d(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe["ema200"] = ta.EMA(dataframe, timeperiod=200)
+        return dataframe
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
@@ -44,7 +49,8 @@ class MeanRevRSI(IStrategy):
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
-            (dataframe["rsi"] < 30)
+            (dataframe["close"] > dataframe["ema200_1d"])
+            & (dataframe["rsi"] < 30)
             & (dataframe["close"] < dataframe["bb_lower"]),
             "enter_long",
         ] = 1
