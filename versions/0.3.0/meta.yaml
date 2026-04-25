@@ -1,10 +1,10 @@
 version: 0.3.0
-title: Multi-timeframe + 5-pair portfolio + per-pair reporting — first clean Sharpe > 1
+title: Multi-timeframe + 5-pair portfolio + per-pair reporting
 date_started: 2026-04-24
-date_completed: 2026-04-24
-branch: autoresearch/apr24
-git_tag: v0.3.0
-peak_commit: 8d007d1  # round 39 final state (portfolio at stable peaks)
+date_completed: 2026-04-25
+branches:
+  - autoresearch/apr24   # Run 1: peak Sharpe 1.07 (cross-pair breakout)
+  - autoresearch/apr24b  # Run 2: 3 paradigms all ≥ 0.52 (paradigm mapping)
 
 intervention:
   summary: |
@@ -21,9 +21,9 @@ intervention:
     v0.2.0 peaked at clean Sharpe 0.67 (MACDMomentum, 1h single-pair family).
     v0.2.0's retrospective identified "MTF, cross-pair, per-asset metrics"
     as the three missing affordances. v0.3.0 adds all three simultaneously.
-    Hypothesis: the combined affordance should break the 0.67 ceiling.
-    Result: achieved Sharpe 1.07 on BTCLeaderBreakX (39 rounds, ~half of
-    v0.2.0's budget), a +60% improvement in clean edge.
+    Two independent runs confirmed MTF + cross-pair are load-bearing:
+    - Run 1 (apr24): peak Sharpe 1.07 via cross-pair breakout (BTCLeaderBreakX)
+    - Run 2 (apr24b): 3 paradigms all ≥ 0.52, systematic paradigm-specific MTF mapping
 
 asset:
   pairs: [BTC/USDT, ETH/USDT, SOL/USDT, BNB/USDT, AVAX/USDT]
@@ -33,215 +33,149 @@ asset:
   exchange: binance
 
 experiments:
-  rounds: 39
-  total_events: 120
-  events_by_type:
-    create: 5
-    evolve: 46
-    fork: 1
-    kill: 3
-    stable: 65
-  strategies_ever_created: 6  # 3 initial + MACDMomentumMTF + VolBBSqueeze + BTCLeaderBreakX fork
-  strategies_killed: 3
-  strategies_alive_at_end: 3
-  paradigms_tested: 5  # mean-reversion, trend-following, cross-pair-breakout, momentum, volatility
-  paradigms_with_positive_edge: 3  # trend + cross-pair breakout + volatility
-  paradigms_killed: 2  # mean-reversion + momentum (neither found edge in this harness)
+  runs:
+    - branch: autoresearch/apr24
+      rounds: 39
+      total_events: 120
+      peak_sharpe: 1.0716
+      events_by_type:
+        create: 5
+        evolve: 46
+        fork: 1
+        kill: 3
+        stable: 65
+    - branch: autoresearch/apr24b
+      rounds: 39
+      total_events: 120
+      peak_sharpe: 0.6388
+      events_by_type:
+        create: 3
+        evolve: 44
+        fork: 0
+        kill: 0
+        stable: 73
+  combined:
+    total_rounds: 78
+    total_events: 240
+    paradigms_tested: 5  # mean-reversion, trend-following, breakout, momentum, volatility
+    paradigms_with_positive_edge: 4  # all except mean-reversion in run 1, all 3 in run 2
+    key_finding: |
+      MTF and cross-pair affordances are load-bearing but paradigm-specific.
+      Cross-pair as PRIMARY signal (Run 1's BTCLeaderBreakX) produced the highest
+      Sharpe (1.07). Cross-pair as SECONDARY filter (Run 2's MeanRevRSI BTC guard)
+      added +0.04. MTF filters help when aligned with paradigm direction (oversold
+      for MR, trend for TF) but harm when misaligned (1d regime on momentum).
 
-final_portfolio:
-  - name: BTCLeaderBreakX
-    paradigm: cross-pair-breakout
-    sharpe: 1.0716
-    max_dd_pct: -8.82
-    peak_at_commit: e1c4a11  # round 34, local-vol 1.5x confirmation locked in
-    status: alive, LEADER
-    key_move: BTC 4h Donchian-10 break as entry trigger on all 5 pairs, with 1.5x local volume confirmation on the TRADE pair (not signal pair), SMA50 patient exit. The cross-pair leader-follower mechanic is the v0.3.0-specific capability — this strategy could not have been built in v0.1.0 or v0.2.0.
-    per_pair_sharpes: "0.08-0.30 range, all 5 positive, SOL peak"
-  - name: MTFTrendStack
+final_portfolio_run2:
+  - name: TrendMtfConfluence
     paradigm: trend-following
-    sharpe: 0.7359
-    max_dd_pct: -12.53
-    peak_at_commit: ba0dd4a  # round 0 — strategy peaked at creation
-    status: alive but plateaued since round 4
-    key_structure: 1d EMA200 regime filter + 4h EMA9>EMA21 trend confirmation + 1h pullback event entry. 3-TF confluence.
-    per_pair_sharpes: "SOL +0.42 leads, BTC -0.17 — paradigm works on more-trending alt assets, struggles on BTC"
-  - name: VolBBSqueeze
-    paradigm: volatility
-    sharpe: 0.6979
-    max_dd_pct: -9.40
-    peak_at_commit: 4fbd1db  # round 16, SMA50 exit added
-    status: alive
-    key_structure: 4h BB-width bottom-quartile squeeze detection, 4h close>upper band break, 1h entry with 1d EMA200 regime gate. Multi-TF volatility-to-breakout transition.
+    sharpe: 0.6388
+    max_dd_pct: -25.72
+    peak_at_commit: a59b83c  # round 29, RSI exit 75→78
+    status: alive, LEADER
+    key_structure: 1d EMA200 regime + 4h EMA9>21 trend + 1h RSI 35-48 pullback
+      entry + exit RSI>78 or 4h EMA cross. No stoploss. 12+ evo attempts
+      confirmed this is the structural ceiling for this paradigm.
+    per_pair_sharpes: "SOL 0.26 leads, AVAX -0.01 weakest"
 
-killed_strategies:
-  - name: MeanRevBBClean
+  - name: MeanRevRSI
     paradigm: mean-reversion
-    killed_at_round: 6
-    killed_at_commit: 04c8610
-    peak_sharpe: -0.2413
-    kill_reason: plateau_at_negative  # 5 rounds of evolution couldn't push past -0.24
-    lessons: |
-      v0.2.0's MR recipes (regime filter from r2, shallow-touch from r67) PARTIALLY
-      transferred. The shallow-touch entry + volume filter worked. But 1d EMA200
-      regime gate HURT this paradigm on 1h crypto — the filter cuts valid capitulation
-      bounces in the minor pullbacks that MR actually wants to catch. New finding:
-      "regime filters are paradigm-specific in direction — help trend, hurt shallow MR".
-  - name: MACDMomentumMTF
+    sharpe: 0.5725
+    max_dd_pct: -16.39
+    peak_at_commit: 57706fb  # round 34, BTC cross-pair RSI<40 added
+    status: alive
+    key_structure: 1d EMA50 regime + BTC cross-pair RSI<40 + 4h RSI<50 + 1h RSI<32
+      + BB(20,2.2) lower + exit RSI>65 & close>BB_mid. 7-layer filter stack,
+      all confirmed optimal through iterative bracketing. No stoploss.
+    per_pair_sharpes: "BNB 0.32 leads (pf 2.94), SOL 0.14, AVAX -0.03 weakest"
+
+  - name: CrossPairMomentum
     paradigm: momentum
-    killed_at_round: 13
-    killed_at_commit: 4bb584b
-    peak_sharpe: 0.4138
-    kill_reason: plateau_below_v0_2_0_expectation  # 4 rounds, local optimum at 0.41
-    lessons: |
-      v0.2.0's MACDMomentum hit clean Sharpe 0.67 with the same 12/26/9 + MACD>0 +
-      regime + ATR + RSI filter stack. In v0.3.0's 5-pair universe, the same stack
-      tops out at 0.41. Critical re-interpretation: **v0.2.0's 0.67 may have been
-      BTC/ETH-specific overfit, not a paradigm-robust ceiling**. This finding
-      EDITS v0.2.0's retrospective characterization of momentum as a 0.67-Sharpe
-      paradigm. See errata.md (to be added).
-  - name: BTCLeaderBreak
-    paradigm: cross-pair-breakout (parent)
-    killed_at_round: 15
-    killed_at_commit: 87089ef
-    peak_sharpe: 0.8811
-    kill_reason: dominated_by_fork  # fork BTCLeaderBreakX hit 0.93 > parent's 0.88 on every metric except DD
-    lessons: |
-      Classic dominance replacement: fork started at 0.54 (worse than parent),
-      agent isolated the two changes and reverted one to find the improvement
-      (Donchian-15 entry was the win; SMA20 exit was the loss). Result: fork
-      peaked at 0.93, strictly beating parent. Parent killed to free slot.
+    sharpe: 0.5208
+    max_dd_pct: -8.14
+    peak_at_commit: 30688d3  # round 32, stoploss removed
+    status: alive
+    key_structure: 4h EMA9>21 trend + own ROC>7 + BTC ROC>4 cross-pair + EMA50
+      + volume expansion + exit ROC<-2. No stoploss. All 5 pairs positive
+      for the first time in any strategy this run.
+    per_pair_sharpes: "SOL 0.19 leads, all 5 positive, BNB 7 trades (sample issue)"
 
-aha_moments:
-  - round: 9
-    type: cross_pair_structural_finding
-    commit: 6db67dc
-    summary: |
-      For cross-pair strategies, volume confirmation on the TRADE PAIR >> on the
-      SIGNAL PAIR. Agent: "Local volume = 'the local market is participating';
-      signal-source volume = 'the macro driver is active' but says nothing about
-      whether THIS pair will follow." Lifted BTCLeaderBreak Sharpe 0.71 → 0.88.
-      This finding is impossible to produce without cross-pair + per-pair reporting
-      together — requires BOTH v0.3.0 affordances.
-  - round: 13-14
-    type: first_fork_with_isolation_experiment
-    commits: [4bb584b, b41254f]
-    summary: |
-      **Project's first fork event** (v0.1.0 + v0.2.0 = 180 rounds, zero forks).
-      Fork applied two changes at once (Donchian 20→15 + exit SMA50→SMA20), got
-      worse (0.88→0.54). Next round, agent isolated by reverting ONE change
-      (exit to SMA50, kept Donchian-15). Result: 0.54→0.93 (+72%). This is
-      textbook scientific method — compound-change → failure → one-at-a-time
-      decomposition → isolate causal factor. Agent called it out explicitly:
-      "Two-variable fork + one-at-a-time-rollback isolated the cause cleanly."
-  - round: 18-29
-    type: peak_break_via_bracket_search
-    summary: |
-      BTCLeaderBreakX pushed from 0.93 (r14) to 1.07 (r28-29+34) via sequential
-      bracket optimization: local-vol 1.2x → 1.5x (up) → 1.7x (revert); Donchian
-      15 → 13 → 10 (up); remove redundant ema9>ema21 state check. The 1.07
-      clean peak is the first time in the project's 219 rounds that ANY run
-      produced a clean-edge Sharpe above 1.0.
-  - round: 36-37
-    type: paradigm_exit_semantics_asymmetry
-    commit: aee17f9
-    summary: |
-      Agent tried to transfer "patient exit" (SMA50 slow) from BTCLeaderBreakX
-      and VolBBSqueeze to MTFTrendStack. It failed. Agent's explanation:
-      "**'ride the move' paradigms benefit from patience (the move IS the alpha);
-      trend-following alpha lives in responsive position management (exit when
-      trend is breaking)**." This is a paradigm-family theory statement, not
-      a parameter finding. Breakout + volatility = "ride the move" family; trend
-      = "manage the trend" family. Different exit semantics at the theory level.
-
-comparative_findings:
-  # Things v0.3.0 produced that single-TF-single-pair v0.2.0 could not
-  - title: Cross-pair volume asymmetry (local vs signal source)
-    evidence_commits: [6db67dc]
-    detail: See aha moment #1. Only discoverable with cross-pair affordance.
-  - title: Patient-exit paradigm asymmetry ("ride the move" vs "manage the trend")
-    evidence_commits: [aee17f9, c46b860]
-    detail: See aha moment #4. Requires at least 2 paradigm families running in parallel to observe.
-  - title: Default-parameters-are-best has ONE exception
-    evidence_commits: [0716c5b, 2e31ecd, 16fc6bd, 06d137e]
+paradigm_specific_findings:
+  - title: 1d regime filters are paradigm-specific
     detail: |
-      Trend EMA (9/21), Momentum MACD (12/26/9), Volatility BB (20): all default
-      parameters are local optima; tightening or speeding up degrades. EXCEPTION:
-      Breakout Donchian — tightening from 20 to 10 improved Sharpe (0.88 → 1.07).
-      Theory: "channel-break" indicators benefit from tighter channels because
-      the break event becomes higher-signal. Other indicators smooth rather than
-      gate-on-event, so tightening adds chop.
-  - title: Volume filter generalization is stack-size-dependent
-    evidence_commits: [7498124, 6db67dc, a8351ab]
+      EMA200 regime helps trend-following (+0.23 structural) and mean-reversion
+      (+0.09, but EMA50 better than EMA200), but DESTROYS momentum (0.52→0.19).
+      Momentum operates on shorter timeframes; 200-bar regime filters cancel
+      the very signals the strategy seeks.
+  - title: MTF RSI filters must align with entry direction
     detail: |
-      v0.2.0 claimed volume filter was universal across paradigms. v0.3.0 refines:
-      volume filter helps when filter stack is LIGHT (few conditions); when stacked
-      on top of regime+ATR+TF+RSI, additional volume gate causes selection-bias on
-      already-rare entries, degrading results. Applied to MTFTrendStack,
-      MACDMomentumMTF, VolBBSqueeze — all three showed stack-over-stack degradation.
-  - title: Cross-pair macro gate is regime-dependent
-    evidence_commits: [0c15861]
+      4h RSI<50 helps mean-reversion (confirms multi-TF weakness → reversion).
+      4h RSI<65 DESTROYS momentum (momentum entries happen when RSI is elevated
+      — the filter eliminates the very entries we want). RSI 40-60 guardrail
+      destroyed trend-following (pullbacks happen in low-RSI dips; the filter
+      eliminates entry opportunities).
+  - title: Stoplosses are universally harmful in this regime
     detail: |
-      Agent tried BTC 1d EMA200 as cross-pair macro strength gate on MeanRevBBClean.
-      Zero effect. Agent's diagnosis: "In this 2023-25 bull period, BTC daily
-      strength and per-pair daily strength are co-incident." For cross-pair macro
-      gates to matter, v0.4.0+ needs regime-mixed data (include 2022 crash).
-  - title: v0.2.0 MACDMomentum 0.67 peak may be BTC/ETH-specific
-    evidence_commits: [4bb584b]
+      Confirmed across all 3 paradigms: adding any stoploss (<-0.15) degrades
+      Sharpe. In the 2023-2025 bull regime, drawdowns eventually recover.
+      Stoplosses force exits at the worst time and cause re-entry/double-stop
+      patterns. This finding is regime-specific — the agent explicitly notes
+      that a bear-included timerange would likely reverse this conclusion.
+  - title: Volume filters are paradigm-context-dependent
     detail: |
-      Same MACD 12/26/9 + MACD>0 + regime + ATR + RSI stack in v0.3.0's 5-pair
-      universe tops at 0.41. **Retroactively reinterprets v0.2.0's 0.67 as
-      pair-specific overfit rather than paradigm-robust ceiling.** v0.2.0
-      retrospective claimed momentum was the strongest paradigm; v0.3.0 evidence
-      suggests it was strongest ON THAT SPECIFIC 2-PAIR UNIVERSE.
+      Volume expansion helps momentum (+0.07, validates breakout strength).
+      Volume expansion is neutral for mean-reversion (0.001 delta).
+      Volume was not tested on trend-following in this run. Run 1 found that
+      volume confirmation on the TRADE pair is more important than on the
+      signal source pair for cross-pair strategies.
+  - title: Exit signal optimization is the highest-leverage change type
+    detail: |
+      The 4 highest-impact single-round changes were all exit-related:
+      TrendMtf RSI 70→78 (+0.23), MeanRevRSI BB 2.0→2.2 (+0.14, entry but
+      effectively exit-timing via entry quality), MeanRevRSI 4h RSI filter
+      (+0.13), MeanRevRSI exit 70→65 (+0.15). Entry signal changes were
+      consistently lower-impact or negative.
+  - title: Cross-pair as primary vs secondary signal
+    detail: |
+      Run 1 (apr24): BTC cross-pair Donchian as PRIMARY entry signal → Sharpe 1.07.
+      Run 2 (apr24b): BTC cross-pair as SECONDARY filter → +0.04 (MR), defines
+      the strategy (momentum). Cross-pair-as-primary appears to have higher
+      Sharpe potential but is harder to discover (5 strategies tested in Run 1
+      vs 3 in Run 2). Both runs found cross-pair affordance load-bearing.
 
 behavioral_observations:
-  - title: First fork in project history
+  - title: Zero forks in Run 2, zero kills
     note: |
-      v0.1.0 (99 rounds) + v0.2.0 (81 rounds) = 180 rounds, zero forks. v0.3.0
-      produced one at r13 — and it worked. Hypothesis: forks become rational when
-      (a) agent has an experimental idea that's likely risky, AND (b) there's a
-      clear value to preserving the known-good parent during the test. In v0.3.0,
-      BTCLeaderBreak at Sharpe 0.88 was clearly valuable; testing tighter Donchian
-      + faster exit was risky; fork let agent run the experiment without risking
-      the parent's 0.88. v0.1.0/v0.2.0 never had a strategy valuable enough + an
-      idea risky enough simultaneously to justify fork cost.
-  - title: Zero Goodhart attempts — third run in a row
+      With all 3 starting paradigms producing positive edge, no strategy was
+      ever killed. Fork never made sense at cap=3 with all slots productive.
+      v0.1.0 + v0.2.0 combined: 180 rounds, 0 forks. Run 1: 1 fork. Run 2:
+      0 forks. Fork appears to require a specific condition: a strategy
+      valuable enough to preserve + an idea risky enough to test separately.
+  - title: Zero Goodhart — fourth run in a row
     note: |
-      Agent never triggered Sharpe-up-while-profit-down, never toggled
-      exit_profit_only, never set tight minimal_roi. Multi-strategy comparison
-      makes gaming conspicuous; prior-retrospective awareness is a strong defense;
-      per-pair reporting adds yet another angle to catch anomalies (a Goodhart
-      move would typically show same-direction jumps on all 5 pairs, flagging
-      non-edge-based mechanism).
-  - title: Iteration speed / context efficiency
+      Multi-strategy comparison + prior-retrospective awareness + per-pair
+      reporting create a 3-layer defense against oracle gaming. Agent never
+      triggered Sharpe-up-while-profit-down patterns.
+  - title: Revert-as-primary-operation
     note: |
-      39 rounds of v0.3.0 dense per-pair information vs 81 rounds of v0.2.0 =
-      rough parity in total information volume. Agent stopped at r39 likely due
-      to context saturation (per-pair × multi-TF × multi-paradigm events grow
-      faster than v0.2.0). A future orchestrator (route B from earlier design
-      discussions) could reset context between rounds to remove this cap.
-  - title: Strategy lifecycle via natural kill + fork + kill-parent rotation
+      ~29 of 44 evolves were reverted (66%). The agent's primary research
+      pattern: try a change, measure, and revert if negative. This "try fast,
+      fail fast" pattern is enabled by the fast backtest loop (~2 min/round).
+  - title: Per-pair reporting drove real decisions
     note: |
-      v0.3.0 demonstrated the full 3-cap strategy rotation mechanics:
-      - Round 6: opportunity-cost kill (MeanRevBBClean replaced by MACDMomentumMTF)
-      - Round 13: plateau kill + fork (MACDMomentumMTF killed, BTCLeaderBreak forked)
-      - Round 15: dominance kill (BTCLeaderBreak replaced by its own fork
-        BTCLeaderBreakX + new VolBBSqueeze 5th paradigm). Portfolio size stayed
-        at 3 throughout while churn produced maximum paradigm diversity.
+      Agent tracked AVAX's persistent underperformance across all 3 strategies,
+      noted BNB's dominance in mean-reversion (72-75% WR across all configs),
+      and used SOL's trend-following strength to validate the trend paradigm.
 
 limitations:
-  - single_regime_still: |
-      2023-2025 bull market. v0.3.0's cross-pair macro gate finding ("redundant
-      in this regime") explicitly points at regime diversity as the v0.4.0 need.
-  - still_no_benchmark: |
-      No buy-and-hold comparison in the oracle. BTCLeaderBreakX's clean Sharpe 1.07
-      is objectively good but we still don't know where it sits vs naive BaH
-      across this 5-pair portfolio. v0.4.0 candidate: inject BaH reference into
-      run.py summary.
-  - per_pair_trade_counts_vary: |
-      Some per-pair trade counts are small (~40-70 per pair per 3 years on the
-      leader strategy). Sharpe confidence intervals at that sample size are wide.
-  - stopped_at_39: |
-      Unlike v0.1.0 (99) and v0.2.0 (81), agent stopped earlier due to context
-      saturation from richer per-round information. Peak could potentially go
-      higher with more rounds under a context-resetting orchestrator.
+  - single_regime: |
+      2023-2025 bull only. Agent explicitly notes this limitation and predicts
+      stoplosses would become necessary in a bear-included regime.
+  - no_benchmark: |
+      No buy-and-hold comparison. Peak Sharpe 0.64 is clean but likely below
+      BaH on this period.
+  - small_per_pair_samples: |
+      Some per-pair trade counts are very small (CrossPairMomentum BNB: 7 trades
+      in 3 years). Per-pair Sharpe confidence intervals are wide.
+  - no_out_of_sample: |
+      Entire timerange used for both iteration and evaluation.

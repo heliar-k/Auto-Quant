@@ -38,7 +38,7 @@
     "name": "binance",
     "key": "",
     "secret": "",
-    "ccxt_config": {},
+    "ccxt_config": {"httpsProxy": "http://127.0.0.1:7890"},
     "ccxt_async_config": {},
     "pair_whitelist": ["BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "AVAX/USDT"],
     "pair_blacklist": []
