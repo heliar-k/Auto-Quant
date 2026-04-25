@@ -63,7 +63,7 @@ class TrendMtfConfluence(IStrategy):
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
-            (dataframe["rsi"] > 78)
+            (dataframe["rsi"] > 80)
             | (dataframe["ema9_4h"] < dataframe["ema21_4h"]),
             "exit_long",
         ] = 1
