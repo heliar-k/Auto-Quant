@@ -63,7 +63,7 @@ class PanicReboundMTF(IStrategy):
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe.loc[
+        entry_condition = (
             (dataframe["close"] > dataframe["ema50_1d"])
             & (dataframe["close"] > dataframe["ema50"] * 0.92)
             & (dataframe["rsi_4h"] < 50)
@@ -71,9 +71,13 @@ class PanicReboundMTF(IStrategy):
             & (dataframe["btc_usdt_roc_1h"] < 1.5)
             & (dataframe["rsi"] < 32)
             & (dataframe["close"] < dataframe["bb_lower"])
-            & (dataframe["volume"] > dataframe["vol_ma"] * 0.8),
-            "enter_long",
-        ] = 1
+            & (dataframe["volume"] > dataframe["vol_ma"] * 0.8)
+        )
+
+        if metadata.get("pair") == "AVAX/USDT":
+            entry_condition &= False
+
+        dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
