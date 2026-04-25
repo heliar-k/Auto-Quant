@@ -62,7 +62,7 @@ class MeanRevRSI(IStrategy):
         dataframe.loc[
             (dataframe["close"] > dataframe["ema50_1d"])
             & (dataframe["btc_usdt_rsi_1h"] < 40)
-            & (dataframe["rsi_4h"] < 50)
+            & (dataframe["rsi_4h"] < 52)
             & (dataframe["rsi"] < 32)
             & (dataframe["close"] < dataframe["bb_lower"]),
             "enter_long",
