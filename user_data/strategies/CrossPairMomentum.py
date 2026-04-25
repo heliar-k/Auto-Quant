@@ -46,7 +46,6 @@ class CrossPairMomentum(IStrategy):
     @informative("1h", "BTC/USDT")
     def populate_indicators_btc(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["roc"] = ta.ROC(dataframe, timeperiod=20)
-        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         return dataframe
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
@@ -58,7 +57,6 @@ class CrossPairMomentum(IStrategy):
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
             (dataframe["ema9_4h"] > dataframe["ema21_4h"])
-            & (dataframe["btc_usdt_rsi_1h"] < 65)
             & (dataframe["roc"] > 7.0)
             & (dataframe["btc_usdt_roc_1h"] > 4.0)
             & (dataframe["close"] > dataframe["ema50"])
