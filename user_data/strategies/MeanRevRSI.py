@@ -9,7 +9,7 @@ assets. Per-pair reporting will reveal which pairs revert reliably and which don
 Parent: root
 Created: (set after first commit)
 Status: active
-Uses MTF: yes (1d EMA50 regime + 4h RSI confluence)
+Uses MTF: yes (1d EMA50 regime + 4h RSI confluence + cross-pair BTC)
 """
 
 from pandas import DataFrame
@@ -36,6 +36,11 @@ class MeanRevRSI(IStrategy):
 
     startup_candle_count: int = 200
 
+    @informative("1h", "BTC/USDT")
+    def populate_indicators_btc(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
+        return dataframe
+
     @informative("4h")
     def populate_indicators_4h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
@@ -56,6 +61,7 @@ class MeanRevRSI(IStrategy):
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
             (dataframe["close"] > dataframe["ema50_1d"])
+            & (dataframe["btc_usdt_rsi_1h"] < 40)
             & (dataframe["rsi_4h"] < 50)
             & (dataframe["rsi"] < 32)
             & (dataframe["close"] < dataframe["bb_lower"]),
