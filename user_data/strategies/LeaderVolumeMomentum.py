@@ -67,7 +67,7 @@ class LeaderVolumeMomentum(IStrategy):
             entry_condition &= False
 
         if metadata.get("pair") == "BTC/USDT":
-            entry_condition &= dataframe["roc"] > 7.5
+            entry_condition &= dataframe["roc"] > 7.75
 
         dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
