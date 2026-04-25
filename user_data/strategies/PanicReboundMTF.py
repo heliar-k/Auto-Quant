@@ -83,6 +83,9 @@ class PanicReboundMTF(IStrategy):
         if metadata.get("pair") == "ETH/USDT":
             entry_condition &= dataframe["rsi"] < 30
 
+        if metadata.get("pair") == "BTC/USDT":
+            entry_condition &= dataframe["rsi"] < 30
+
         dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
 
