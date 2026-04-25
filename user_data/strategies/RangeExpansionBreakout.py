@@ -71,7 +71,7 @@ class RangeExpansionBreakout(IStrategy):
         was_compressed = dataframe["bb_width_min"] < dataframe["bb_width_ma"] * 0.68
         is_expanding = dataframe["bb_width"] > dataframe["bb_width_ma"] * 0.92
 
-        dataframe.loc[
+        entry_condition = (
             (dataframe["close"] > dataframe["ema100_1d"])
             & (dataframe["ema9_4h"] > dataframe["ema34_4h"])
             & (dataframe["btc_usdt_roc_1h"] > 2.0)
@@ -81,9 +81,16 @@ class RangeExpansionBreakout(IStrategy):
             & (dataframe["close"] > dataframe["prior_high"])
             & (dataframe["close"] > dataframe["bb_upper"])
             & (dataframe["roc"] > 3.0)
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.15),
-            "enter_long",
-        ] = 1
+            & (dataframe["volume"] > dataframe["vol_ma"] * 1.15)
+        )
+
+        if metadata.get("pair") == "BNB/USDT":
+            entry_condition &= (
+                (dataframe["roc"] > 5.0)
+                & (dataframe["volume"] > dataframe["vol_ma"] * 1.35)
+            )
+
+        dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
