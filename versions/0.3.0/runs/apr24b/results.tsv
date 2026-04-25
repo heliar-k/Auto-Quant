@@ -1,0 +1,121 @@
+commit	event	strategy_name	sharpe	max_dd	note
+675b921	create	TrendMtfConfluence	0.4234	-27.77	Initial: MTF trend-following with 4h EMA cross + 1d regime. Sharpe 0.42 aggregate but SOL-heavy (0.28) vs AVAX negative (-0.04). 656 trades. Strong start, per-pair divergence flags asset-specific sensitivity.
+675b921	create	CrossPairMomentum	-0.1454	-37.17	Initial: cross-pair momentum with BTC ROC gate. ROC thresholds too loose (1102 trades, 33% wr). Negative across most pairs. Need tighter entry conditions or broader market regime filter.
+675b921	create	MeanRevRSI	-0.1851	-28.72	Initial: pure 1h RSI reversion baseline. 316 trades, 57% wr but losers are large (pf 0.91). BNB+0.26, BTC+0.15 positive; SOL/AVAX negative. Reversion edge is asset-specific as hypothesized.
+1431afe	evolve	CrossPairMomentum	0.2303	-17.93	Tightened ROC 3→6, BTC ROC 2→5, added EMA50 trend filter, exit ROC<0→<-2, stop -0.10→-0.12. Big turnaround: Sharpe -0.15→0.23, trades 1102→211, DD halved. BTC pos for first time. ROC gates were the main problem.
+1431afe	evolve	TrendMtfConfluence	0.3564	-24.28	Added stoploss -0.15 + tightened RSI band 35-48→38-45. Sharpe 0.42→0.36; stoploss cut 61 trades but hurt more than it helped. Trend strategies need room. Broaden band + soften stop next round.
+1431afe	stable	MeanRevRSI	-0.1851	-28.72	No change this round. Still negative aggregate but BNB+BTC individually positive. Needs evolution soon.
+40a803c	evolve	MeanRevRSI	-0.0646	-39.96	RSI<25→<30 + BB(20,2) lower confluence. Sharpe -0.19→-0.06, trades 316→456. BNB strongest (0.28), AVAX worst (-0.25, -33% DD). BB filter helped quality but AVAX disasters still dominate.
+40a803c	evolve	TrendMtfConfluence	0.3484	-28.01	Softer stop -0.25 + broader RSI 36-47. Essentially flat vs round 2 (0.35 vs 0.36). SOL still the anchor (0.27). AVAX negative (-0.05). Two rounds of MTF tuning haven't beaten round 1's 0.42.
+40a803c	stable	CrossPairMomentum	0.2303	-17.93	Stable this round. Holding at 0.23 after round 2's turnaround. BNB trade count low (23) — sample size concern.
+40a803c	evolve	CrossPairMomentum	-0.0312	-23.98	DISCARDED (reset): trailing stop 1%/3% offset. Sharpe 0.23→-0.03. Trailing stop capped winners while -0.12 stop still took full losses. Reverting.
+40a803c	evolve	MeanRevRSI	-0.2449	-50.40	DISCARDED (reset): stoploss -0.15. Sharpe -0.06→-0.24, DD -40→-50%. Stoploss forces exit at worst time on mean-reversion; causes re-entry and double-stop. Reverting.
+40a803c	stable	TrendMtfConfluence	0.3484	-28.01	Stable (discarded round, no change applied).
+d6d79fa	evolve	MeanRevRSI	-0.0349	-35.36	Added 1d EMA200 bull regime filter. Sharpe -0.06→-0.03, trades 456→232. AVAX DD -33→-14% — filter works but halved trade count. EMA200 too restrictive; try shorter-term trend filter.
+d6d79fa	stable	CrossPairMomentum	0.2303	-17.93	Stable. 2nd consecutive stable — stagnation looming.
+d6d79fa	stable	TrendMtfConfluence	0.3484	-28.01	Stable this round.
+8e63ca9	evolve	CrossPairMomentum	0.2209	-17.57	Added 4h EMA9>EMA21 trend filter. Sharpe 0.23→0.22 (flat), trades 211→163. Filter unhelpful for momentum — the ROC+EMA50 already captures direction.
+8e63ca9	evolve	MeanRevRSI	0.0767	-26.22	Changed 1d EMA200→EMA50 regime filter. Sharpe -0.03→+0.077 — first positive! BNB strongest (0.28, pf 2.54), SOL weak (-0.09). EMA50 provides right balance: filters bear traps without over-restricting.
+8e63ca9	stable	TrendMtfConfluence	0.3484	-28.01	Stable this round. 2nd consecutive stable — evolution required next round.
+7189579	evolve	TrendMtfConfluence	0.2413	-23.23	Added 4h ATR expansion filter. Sharpe 0.35→0.24, trades 633→418. Pullbacks are low-vol by definition — ATR expansion filter eliminates the entry pattern itself. Reverting next round.
+7189579	stable	CrossPairMomentum	0.2209	-17.57	Stable this round.
+7189579	stable	MeanRevRSI	0.0767	-26.22	Stable this round. Holding at +0.077.
+572f6da	evolve	TrendMtfConfluence	0.4234	-27.77	Restored round-1 config: stoploss -0.99, RSI 35-48, no extra filters. Confirmed: all 4 filter attempts (stoploss, tighter RSI, ATR, 4h RSI guardrail) degraded from original 0.42. The simple MTF formula works; additional filters harm.
+572f6da	stable	CrossPairMomentum	0.2209	-17.57	Stable. 2nd consecutive — evolution required next round.
+572f6da	stable	MeanRevRSI	0.0767	-26.22	Stable. 2nd consecutive — evolution required next round.
+f6f022d	evolve	CrossPairMomentum	0.3707	-13.71	Lowered BTC ROC 5→4. Sweet spot found: Sharpe 0.22→0.37, DD halved -17.6→-13.7%, trades 163→222. SOL (0.19) + AVAX (0.15) lead; BNB trade count still low (21). Best result for this strategy.
+f6f022d	evolve	MeanRevRSI	0.2342	-23.30	Tightened exit RSI 70→65. Sharpe 0.077→0.23, profit 6.9→15.8%. Faster exit locks mean-reversion gains before reversals fade. BNB still strongest (0.26, pf 2.12).
+f6f022d	stable	TrendMtfConfluence	0.4234	-27.77	Stable. Holding at round-1 config 0.42. SOL-dependent (0.28) but aggregate strong.
+ac379cb	evolve	MeanRevRSI	0.2377	-27.24	Widened entry RSI<30→<32. Sharpe 0.23→0.24, trades 251→313. SOL flipped from -0.02→+0.12 — the wider threshold helped on more volatile pairs.
+ac379cb	stable	CrossPairMomentum	0.3707	-13.71	Stable this round.
+ac379cb	stable	TrendMtfConfluence	0.4234	-27.77	Stable. 2nd consecutive — evolution required next round.
+4afd14c	evolve	TrendMtfConfluence	0.4234	-27.77	Attempt: faster exit close<ema9_4h → Sharpe collapsed to -0.05 (trades 656→228). Reverted to EMA cross exit. Confirmed: original exit is optimal; any faster exit kills the trend-following edge.
+4afd14c	stable	CrossPairMomentum	0.3707	-13.71	Stable this round.
+4afd14c	stable	MeanRevRSI	0.2377	-27.24	Stable this round.
+f17e6f1	evolve	MeanRevRSI	0.3626	-18.45	Added 4h RSI<45 confluence — MTF oversold filter. Big breakout: Sharpe 0.24→0.36, DD -27.2→-18.5%, profit 17→23.9%. BNB absolute monster: Sharpe 0.36, wr 72%, pf 3.08. Multi-TF works for mean-reversion specifically (unlike trend where it hurt).
+f17e6f1	stable	CrossPairMomentum	0.3707	-13.71	Stable. 2nd consecutive — evolution required next round.
+f17e6f1	stable	TrendMtfConfluence	0.4234	-27.77	Stable this round.
+7e5f62c	evolve	CrossPairMomentum	0.2089	-11.97	Attempt: ROC 6→5.5 + exit ROC<-2→<0. Sharpe 0.37→0.21. Lower ROC added noise; faster exit cut winners. Reverted to round-8 config. Sweet spot confirmed: ROC>6 + BTC ROC>4 + exit ROC<-2.
+7e5f62c	stable	MeanRevRSI	0.3626	-18.45	Stable this round. Holding at 0.36 after round-11 breakout.
+7e5f62c	stable	TrendMtfConfluence	0.4234	-27.77	Stable. 2nd consecutive — evolution required by round 14.
+37b8568	evolve	MeanRevRSI	0.3561	-20.50	Added volume spike filter (vol > vol_ma 20). Essentially flat (0.363→0.356). Volume doesn't add much beyond the existing 3-layer filter (regime + 4h RSI + BB).
+37b8568	stable	CrossPairMomentum	0.3707	-13.71	Stable this round.
+37b8568	stable	TrendMtfConfluence	0.4234	-27.77	Stable. 3rd consecutive — forced evolution this round (r14).
+cee667f	evolve	TrendMtfConfluence	0.4079	-27.77	Added cross-pair BTC RSI<70 guard. Essentially flat (0.423→0.408, -1 trade). Filter is too mild to matter — BTC rarely hits 1h RSI>70 in this timerange. But first non-degrading filter attempt.
+cee667f	stable	CrossPairMomentum	0.3707	-13.71	Stable. 2nd consecutive.
+cee667f	stable	MeanRevRSI	0.3561	-20.50	Stable this round.
+1942db6	evolve	MeanRevRSI	0.2892	-18.92	Attempt: tighter exit RSI 65→60. Sharpe 0.36→0.29 — too aggressive, cut winners early. Reverted. RSI>65 confirmed as optimal exit for mean-reversion.
+1942db6	stable	CrossPairMomentum	0.3707	-13.71	Stable. 3rd consecutive — forced evolution in round 16.
+1942db6	stable	TrendMtfConfluence	0.4079	-27.77	Stable this round.
+cbc617e	evolve	CrossPairMomentum	0.4332	-11.30	Tightened own ROC 6→7 (kept BTC ROC 4). New peak! Sharpe 0.37→0.43, profit 29.7→37.2%, DD -13.7→-11.3%, pf 1.32→1.53. ALL 5 PAIRS POSITIVE — first strategy to achieve per-pair universality. Trades 222→167, quality over quantity.
+cbc617e	stable	MeanRevRSI	0.3561	-20.50	Stable this round.
+cbc617e	stable	TrendMtfConfluence	0.4079	-27.77	Stable. 2nd consecutive.
+5cf7bc7	evolve	MeanRevRSI	0.2164	-18.49	Attempt: broaden RSI 32→35 + drop volume filter. Sharpe 0.36→0.22. RSI<35 too noisy; volume filter does matter. Reverted to round-11 winning config.
+5cf7bc7	stable	CrossPairMomentum	0.4332	-11.30	Stable at new peak 0.43.
+5cf7bc7	stable	TrendMtfConfluence	0.4079	-27.77	Stable. 3rd consecutive — forced evolution in round 18.
+a46a31e	evolve	TrendMtfConfluence	-1.2300	-39.20	Attempt: replaced RSI entry with MACD histogram pullback. Catastrophic: Sharpe 0.41→-1.23, 1454 trades. MACD histogram oscillates too rapidly on 1h — generates massive false signals. Reverted. RSI pullback entry is the correct signal class for this paradigm.
+a46a31e	stable	CrossPairMomentum	0.4332	-11.30	Stable this round.
+a46a31e	stable	MeanRevRSI	0.3561	-20.50	Stable this round.
+37fbd41	evolve	MeanRevRSI	0.3626	-18.45	Tested removing volume filter in isolation. Sharpe 0.356→0.363 — same as round 11 with volume. Volume filter is truly neutral; simpler code wins. Optimal config confirmed: regime + 4h RSI<45 + 1h RSI<32 + BB_lower + exit RSI>65.
+37fbd41	stable	CrossPairMomentum	0.4332	-11.30	Stable. 2nd consecutive.
+37fbd41	stable	TrendMtfConfluence	0.4079	-27.77	Stable this round.
+5169748	evolve	CrossPairMomentum	0.3626	-17.99	Attempt: remove 4h EMA trend filter. Sharpe 0.43→0.36, DD doubled. Reverted. 4h EMA filter IS structural — it filters counter-trend entries that ROC+EMA50 alone miss. Confirmed: all 3 layers (4h trend + own momentum + BTC confirmation) are necessary.
+5169748	stable	MeanRevRSI	0.3626	-18.45	Stable this round.
+5169748	stable	TrendMtfConfluence	0.4079	-27.77	Stable. 2nd consecutive.
+8d20ce0	evolve	MeanRevRSI	0.5044	-16.04	Tightened BB 2.0→2.2 std. Breakthrough! Sharpe 0.36→0.50, profit 23.9→35.6%, DD -18.5→-16.0%. BNB absurd: 0.36 Sharpe, 75.6% wr, pf 3.52. BB 2.2 isolates genuine reversal extremes — stronger reversion signal.
+8d20ce0	stable	CrossPairMomentum	0.4332	-11.30	Stable at peak 0.43.
+8d20ce0	stable	TrendMtfConfluence	0.4079	-27.77	Stable. 3rd consecutive — forced evolution in round 22.
+92c593d	evolve	TrendMtfConfluence	0.5959	-26.14	Raised RSI exit 70→75. Breakthrough! Sharpe 0.41→0.60 — new all-time peak. Profit 28.8→52.7%, trades 655→549. RSI>70 exit was cutting winners too early in strong trends. 75 gives room to run while EMA cross provides crash-stop.
+92c593d	stable	CrossPairMomentum	0.4332	-11.30	Stable at 0.43.
+92c593d	stable	MeanRevRSI	0.5044	-16.04	Stable at new peak 0.50.
+ef090e4	evolve	CrossPairMomentum	0.4239	-11.30	Attempt: tighten ROC 7→7.5. Sharpe 0.433→0.424, slightly too tight. Reverted. ROC 7.0 is the optimal sweet spot.
+ef090e4	stable	MeanRevRSI	0.5044	-16.04	Stable at 0.50 peak.
+ef090e4	stable	TrendMtfConfluence	0.5959	-26.14	Stable at 0.60 peak.
+3f06719	evolve	MeanRevRSI	0.4372	-16.04	Attempt: BB 2.2→2.4. Sharpe 0.50→0.44 — too restrictive, cuts trades too aggressively. Reverted. BB 2.2 is the sweet spot.
+3f06719	stable	CrossPairMomentum	0.4332	-11.30	Stable at 0.43.
+3f06719	stable	TrendMtfConfluence	0.5959	-26.14	Stable at 0.60 peak.
+eb4024c	evolve	TrendMtfConfluence	0.5987	-26.14	Removed neutral BTC RSI<70 guard. Sharpe 0.596→0.599 — confirmed neutral. Strategy simplified to core formula: 1d EMA200 regime + 4h EMA trend + 1h RSI 35-48 pullback + exit RSI>75 or EMA cross.
+eb4024c	stable	CrossPairMomentum	0.4332	-11.30	Stable at 0.43.
+eb4024c	stable	MeanRevRSI	0.5044	-16.04	Stable at 0.50.
+a297f1b	evolve	MeanRevRSI	0.5347	-19.76	Widened 4h RSI 45→50 with BB 2.2. Sharpe 0.50→0.53, profit 35.6→39.3%, trades 217→260. BB 2.2 already filters extreme prices — 4h RSI can be looser. SOL breakout (0.07→0.16). Optimal config: 1d EMA50 + 4h RSI<50 + 1h RSI<32 + BB 2.2 + exit RSI>65.
+a297f1b	stable	CrossPairMomentum	0.4332	-11.30	Stable. 3rd consecutive — forced action round 27.
+a297f1b	stable	TrendMtfConfluence	0.5987	-26.14	Stable at 0.60.
+3b6e96f	evolve	CrossPairMomentum	0.5041	-8.14	Added volume expansion filter. Breakthrough! Sharpe 0.43→0.50, profit 37.2→43.3%, DD -11.3→-8.1%, pf 1.53→1.90. Volume validates momentum breakouts — filters false signals. ETH flipped positive. New optimal: all 4 layers (4h trend + ROC + BTC ROC + volume) working.
+3b6e96f	stable	MeanRevRSI	0.5347	-19.76	Stable at 0.53 peak.
+3b6e96f	stable	TrendMtfConfluence	0.5987	-26.14	Stable at 0.60 peak.
+9bc1cc9	evolve	MeanRevRSI	0.5347	-19.76	Added exit requirement: close>BB_mid AND RSI>65. Neutal (same as RSI>65 alone) — after mean reversion from BB_lower extreme, RSI recovery to 65 always coincides with price recovery to SMA. Harmless safety check, kept.
+9bc1cc9	stable	CrossPairMomentum	0.5041	-8.14	Stable at 0.50 peak.
+9bc1cc9	stable	TrendMtfConfluence	0.5987	-26.14	Stable. 2nd consecutive.
+a59b83c	evolve	TrendMtfConfluence	0.6388	-25.72	Pushed RSI exit 75→78. Sharpe 0.60→0.64, profit 52.7→69.0%, pf 1.18→1.25. BTC breakout (0.08→0.19), BNB improved (0.08→0.15). RSI exit threshold series: 70→75 (+0.19), 75→78 (+0.04). Sweet spot trending up.
+a59b83c	stable	CrossPairMomentum	0.5041	-8.14	Stable at 0.50.
+a59b83c	stable	MeanRevRSI	0.5347	-19.76	Stable at 0.53.
+30f31fe	evolve	TrendMtfConfluence	0.6338	-25.72	Pushed RSI exit 78→80. Sharpe 0.639→0.634 — past the peak. Reverted to 78. RSI exit sweet spot confirmed: 78 (series: 70→0.41, 75→0.60, 78→0.64, 80→0.63).
+30f31fe	stable	CrossPairMomentum	0.5041	-8.14	Stable at 0.50.
+30f31fe	stable	MeanRevRSI	0.5347	-19.76	Stable. 2nd consecutive.
+a49909c	evolve	MeanRevRSI	0.2781	-19.76	Attempt: RSI exit 65→68 with tighter entry. Catastrophic: 0.53→0.28. Even with BB 2.2+4h RSI<50, the 65 exit is optimal. Reverted. RSI>65 confirmed universal sweet spot for this paradigm.
+a49909c	stable	CrossPairMomentum	0.5041	-8.14	Stable. 2nd consecutive.
+a49909c	stable	TrendMtfConfluence	0.6388	-25.72	Stable at 0.64 peak.
+30688d3	evolve	CrossPairMomentum	0.5208	-8.14	Removed stoploss -0.12→-0.99. Sharpe 0.50→0.52, pf 1.90→1.94. Stoploss was cutting momentum winners — same pattern as TrendMtf and MeanRevRSI. All 3 strategies now confirm: stops hurt in this bull regime.
+30688d3	stable	MeanRevRSI	0.5347	-19.76	Stable at 0.53.
+30688d3	stable	TrendMtfConfluence	0.6388	-25.72	Stable at 0.64 peak.
+17d66be	evolve	TrendMtfConfluence	0.5818	-25.72	Attempt: widen RSI entry band 35-48→33-50. Sharpe 0.64→0.58 — wider band adds noise, dilutes edge. Reverted. RSI 35-48 confirmed as optimal entry band.
+17d66be	stable	CrossPairMomentum	0.5208	-8.14	Stable at 0.52.
+17d66be	stable	MeanRevRSI	0.5347	-19.76	Stable. 2nd consecutive.
+57706fb	evolve	MeanRevRSI	0.5725	-16.39	Added cross-pair BTC RSI<40 filter — market-wide oversold confirmation. Sharpe 0.53→0.57, profit 39.3→41.7%, DD -19.8→-16.4%, pf 1.37→1.46. AVAX flipped positive (0.02)! Cross-pair affordance works for mean-reversion: altcoin oversold + BTC weak = stronger reversion signal.
+57706fb	stable	CrossPairMomentum	0.5208	-8.14	Stable at 0.52.
+57706fb	stable	TrendMtfConfluence	0.6388	-25.72	Stable at 0.64 peak.
+def265d	evolve	CrossPairMomentum	0.2898	-8.14	Attempt: BTC RSI<65 guard. Catastrophic: 0.52→0.29. BTC RSI conflicts with BTC ROC — when momentum is strong enough for ROC>4, RSI is naturally elevated. RSI filter eliminates the very entries we want. Paradigm-specific: RSI filters must align with entry direction (weakness for MR, strength for momentum).
+def265d	stable	MeanRevRSI	0.5725	-16.39	Stable at 0.57 peak.
+def265d	stable	TrendMtfConfluence	0.6388	-25.72	Stable at 0.64 peak.
+9fab4ad	evolve	MeanRevRSI	0.3853	-16.39	Attempt: BB period 20→14. Sharpe 0.57→0.39 — 14-period too short for reliable extreme detection. Reverted. BB(20, 2.2) confirmed as optimal: captures statistically meaningful extremes.
+9fab4ad	stable	CrossPairMomentum	0.5208	-8.14	Stable at 0.52.
+9fab4ad	stable	TrendMtfConfluence	0.6388	-25.72	Stable. 3rd consecutive — forced evolution in round 37.
+856ccb1	evolve	TrendMtfConfluence	0.5597	-25.72	Attempt: 4h RSI>75 exit for higher-TF overbought. Sharpe 0.64→0.56 — 4h RSI stays elevated in strong bull trends, exits too early. Reverted. 1h RSI + EMA cross remain the optimal exit combo.
+856ccb1	stable	CrossPairMomentum	0.5208	-8.14	Stable at 0.52.
+856ccb1	stable	MeanRevRSI	0.5725	-16.39	Stable at 0.57 peak.
+562a40d	evolve	CrossPairMomentum	0.1923	-8.14	Attempt: 1d EMA200 regime filter. Catastrophic: 0.52→0.19. 1d EMA200 is too slow for momentum signals — 4h trend + EMA50 + BTC ROC already provide sufficient directional context. Key finding: 1d regime filters are PARADIGM-SPECIFIC — help trend/MR, destroy momentum.
+562a40d	stable	MeanRevRSI	0.5725	-16.39	Stable at 0.57.
+562a40d	stable	TrendMtfConfluence	0.6388	-25.72	Stable at 0.64.
+bed30ab	evolve	MeanRevRSI	0.5130	-16.39	Attempt: 4h RSI 50→52 with BTC cross-pair context. Sharpe 0.57→0.51 — 50 still the sweet spot even with cross-pair. Reverted. MeanRevRSI optimal config firmly confirmed: 7-layer stack all verified through bracketing.
+bed30ab	stable	CrossPairMomentum	0.5208	-8.14	Stable at 0.52.
+bed30ab	stable	TrendMtfConfluence	0.6388	-25.72	Stable at 0.64.
