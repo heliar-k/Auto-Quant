@@ -37,6 +37,11 @@ class CrossPairMomentum(IStrategy):
 
     startup_candle_count: int = 200
 
+    @informative("1d")
+    def populate_indicators_1d(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe["ema200"] = ta.EMA(dataframe, timeperiod=200)
+        return dataframe
+
     @informative("4h")
     def populate_indicators_4h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["ema9"] = ta.EMA(dataframe, timeperiod=9)
@@ -56,7 +61,8 @@ class CrossPairMomentum(IStrategy):
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
-            (dataframe["ema9_4h"] > dataframe["ema21_4h"])
+            (dataframe["close"] > dataframe["ema200_1d"])
+            & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & (dataframe["roc"] > 7.0)
             & (dataframe["btc_usdt_roc_1h"] > 4.0)
             & (dataframe["close"] > dataframe["ema50"])
