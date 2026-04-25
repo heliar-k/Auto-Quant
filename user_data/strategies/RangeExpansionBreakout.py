@@ -8,7 +8,7 @@ by volume-backed expansion. A breakout above a prior 48h high should work only w
 volume confirms participation. This tests a distinct volatility/breakout paradigm
 instead of another RSI or ROC variant.
 Parent: root
-Created: pending
+Created: e772907
 Status: active
 Uses MTF: yes (4h EMA trend + 1d EMA regime)
 """

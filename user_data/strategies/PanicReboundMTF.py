@@ -8,7 +8,7 @@ oversold/BB-lower event is higher quality when the traded pair is below-neutral 
 EMA50 regime. This tests whether v0.3.0's cross-pair + MTF context can separate
 recoverable panic from genuine trend failure.
 Parent: root
-Created: pending
+Created: e772907
 Status: active
 Uses MTF: yes (1d EMA50, 4h RSI, cross-pair BTC RSI)
 """

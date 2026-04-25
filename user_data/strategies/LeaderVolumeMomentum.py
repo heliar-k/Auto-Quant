@@ -7,7 +7,7 @@ confirmed by BTC's own 1h strength, aligned with the traded pair's 4h EMA trend,
 and accompanied by above-normal volume. This tests whether BTC still acts as the
 leader/follower gate once SOL, BNB, and AVAX are added to the universe.
 Parent: root
-Created: pending
+Created: e772907
 Status: active
 Uses MTF: yes (4h trend + cross-pair BTC ROC)
 """
