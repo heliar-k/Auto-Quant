@@ -70,5 +70,5 @@ class LeaderVolumeMomentum(IStrategy):
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe.loc[dataframe["roc"] < -2.0, "exit_long"] = 1
+        dataframe.loc[dataframe["roc"] < -3.0, "exit_long"] = 1
         return dataframe
