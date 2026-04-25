@@ -63,7 +63,7 @@ class RangeExpansionBreakout(IStrategy):
         dataframe["bb_width"] = (dataframe["bb_upper"] - dataframe["bb_lower"]) / dataframe["bb_mid"]
         dataframe["bb_width_ma"] = dataframe["bb_width"].rolling(96).mean()
         dataframe["bb_width_min"] = dataframe["bb_width"].rolling(96).min()
-        dataframe["prior_high"] = dataframe["high"].rolling(48).max().shift(1)
+        dataframe["prior_high"] = dataframe["high"].rolling(72).max().shift(1)
         dataframe["vol_ma"] = dataframe["volume"].rolling(24).mean()
         return dataframe
 
