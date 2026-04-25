@@ -53,6 +53,7 @@ class RangeExpansionBreakout(IStrategy):
         return dataframe
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe["ema12"] = ta.EMA(dataframe, timeperiod=12)
         dataframe["ema13"] = ta.EMA(dataframe, timeperiod=13)
         dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
         dataframe["roc"] = ta.ROC(dataframe, timeperiod=12)
@@ -102,7 +103,7 @@ class RangeExpansionBreakout(IStrategy):
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
-            (dataframe["close"] < dataframe["ema13"])
+            (dataframe["close"] < dataframe["ema12"])
             | (dataframe["roc"] < -3.0)
             | (dataframe["rsi"] > 82),
             "exit_long",
