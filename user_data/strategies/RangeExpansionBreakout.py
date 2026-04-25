@@ -63,6 +63,7 @@ class RangeExpansionBreakout(IStrategy):
         dataframe["bb_width"] = (dataframe["bb_upper"] - dataframe["bb_lower"]) / dataframe["bb_mid"]
         dataframe["bb_width_ma"] = dataframe["bb_width"].rolling(96).mean()
         dataframe["bb_width_min"] = dataframe["bb_width"].rolling(96).min()
+        dataframe["prior_high_48"] = dataframe["high"].rolling(48).max().shift(1)
         dataframe["prior_high"] = dataframe["high"].rolling(72).max().shift(1)
         dataframe["prior_high_96"] = dataframe["high"].rolling(96).max().shift(1)
         dataframe["vol_ma"] = dataframe["volume"].rolling(24).mean()
@@ -75,6 +76,9 @@ class RangeExpansionBreakout(IStrategy):
 
         if metadata.get("pair") == "AVAX/USDT":
             breakout_level = dataframe["prior_high_96"]
+
+        if metadata.get("pair") == "BTC/USDT":
+            breakout_level = dataframe["prior_high_48"]
 
         entry_condition = (
             (dataframe["close"] > dataframe["ema100_1d"])
