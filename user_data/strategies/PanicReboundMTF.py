@@ -1,15 +1,16 @@
 """
-MeanRevRSI — RSI mean-reversion on 1h across 5 pairs
+PanicReboundMTF — MTF panic mean-reversion across the 5-pair universe
 
 Paradigm: mean-reversion
-Hypothesis: In the 5-pair universe at 1h, price tends to revert from RSI extremes within
-a few days. This is the same hypothesis that produced a clean Sharpe ~0.52 in v0.2.0 on
-BTC+ETH. Adding SOL/BNB/AVAX tests whether the reversion behavior generalizes across
-assets. Per-pair reporting will reveal which pairs revert reliably and which don't.
+Hypothesis: Crypto majors revert best after synchronized weakness: a local 1h
+oversold/BB-lower event is higher quality when the traded pair is below-neutral on
+4h RSI, BTC is also washed out on 1h, and the pair remains in a constructive 1d
+EMA50 regime. This tests whether v0.3.0's cross-pair + MTF context can separate
+recoverable panic from genuine trend failure.
 Parent: root
-Created: (set after first commit)
+Created: pending
 Status: active
-Uses MTF: yes (1d EMA50 regime + 4h RSI confluence + cross-pair BTC)
+Uses MTF: yes (1d EMA50, 4h RSI, cross-pair BTC RSI)
 """
 
 from pandas import DataFrame
@@ -18,7 +19,7 @@ import talib.abstract as ta
 from freqtrade.strategy import IStrategy, informative
 
 
-class MeanRevRSI(IStrategy):
+class PanicReboundMTF(IStrategy):
     INTERFACE_VERSION = 3
 
     timeframe = "1h"
@@ -26,7 +27,6 @@ class MeanRevRSI(IStrategy):
 
     minimal_roi = {"0": 100}
     stoploss = -0.99
-
     trailing_stop = False
     process_only_new_candles = True
 
@@ -34,16 +34,18 @@ class MeanRevRSI(IStrategy):
     exit_profit_only = False
     ignore_roi_if_entry_signal = False
 
-    startup_candle_count: int = 200
+    startup_candle_count: int = 220
 
     @informative("1h", "BTC/USDT")
     def populate_indicators_btc(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
+        dataframe["roc"] = ta.ROC(dataframe, timeperiod=12)
         return dataframe
 
     @informative("4h")
     def populate_indicators_4h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
+        dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
         return dataframe
 
     @informative("1d")
@@ -53,25 +55,30 @@ class MeanRevRSI(IStrategy):
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
-        bb = ta.BBANDS(dataframe, timeperiod=20, nbdevup=2.2, nbdevdn=2.2)
-        dataframe["bb_lower"] = bb["lowerband"]
-        dataframe["bb_mid"] = bb["middleband"]
+        dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
+        bbands = ta.BBANDS(dataframe, timeperiod=20, nbdevup=2.2, nbdevdn=2.2)
+        dataframe["bb_lower"] = bbands["lowerband"]
+        dataframe["bb_mid"] = bbands["middleband"]
+        dataframe["vol_ma"] = dataframe["volume"].rolling(24).mean()
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
             (dataframe["close"] > dataframe["ema50_1d"])
-            & (dataframe["btc_usdt_rsi_1h"] < 40)
+            & (dataframe["close"] > dataframe["ema50"] * 0.92)
             & (dataframe["rsi_4h"] < 50)
+            & (dataframe["btc_usdt_rsi_1h"] < 42)
+            & (dataframe["btc_usdt_roc_1h"] < 1.5)
             & (dataframe["rsi"] < 32)
-            & (dataframe["close"] < dataframe["bb_lower"]),
+            & (dataframe["close"] < dataframe["bb_lower"])
+            & (dataframe["volume"] > dataframe["vol_ma"] * 0.8),
             "enter_long",
         ] = 1
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
-            (dataframe["rsi"] > 65)
+            (dataframe["rsi"] > 64)
             & (dataframe["close"] > dataframe["bb_mid"]),
             "exit_long",
         ] = 1
