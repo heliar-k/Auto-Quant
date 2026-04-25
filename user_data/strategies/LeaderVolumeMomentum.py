@@ -56,7 +56,6 @@ class LeaderVolumeMomentum(IStrategy):
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         entry_condition = (
             (dataframe["ema9_4h"] > dataframe["ema21_4h"])
-            & (dataframe["rsi_4h"] < 75)
             & (dataframe["close"] > dataframe["ema50"])
             & (dataframe["roc"] > 7.0)
             & (dataframe["btc_usdt_roc_1h"] > 4.0)
