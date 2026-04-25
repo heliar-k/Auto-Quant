@@ -64,12 +64,17 @@ class RangeExpansionBreakout(IStrategy):
         dataframe["bb_width_ma"] = dataframe["bb_width"].rolling(96).mean()
         dataframe["bb_width_min"] = dataframe["bb_width"].rolling(96).min()
         dataframe["prior_high"] = dataframe["high"].rolling(72).max().shift(1)
+        dataframe["prior_high_96"] = dataframe["high"].rolling(96).max().shift(1)
         dataframe["vol_ma"] = dataframe["volume"].rolling(24).mean()
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         was_compressed = dataframe["bb_width_min"] < dataframe["bb_width_ma"] * 0.68
         is_expanding = dataframe["bb_width"] > dataframe["bb_width_ma"] * 0.92
+        breakout_level = dataframe["prior_high"]
+
+        if metadata.get("pair") == "AVAX/USDT":
+            breakout_level = dataframe["prior_high_96"]
 
         entry_condition = (
             (dataframe["close"] > dataframe["ema100_1d"])
@@ -78,7 +83,7 @@ class RangeExpansionBreakout(IStrategy):
             & (dataframe["btc_usdt_rsi_1h"] > 50)
             & was_compressed
             & is_expanding
-            & (dataframe["close"] > dataframe["prior_high"])
+            & (dataframe["close"] > breakout_level)
             & (dataframe["close"] > dataframe["bb_upper"])
             & (dataframe["roc"] > 3.0)
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.15)
