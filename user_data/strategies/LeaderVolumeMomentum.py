@@ -54,16 +54,20 @@ class LeaderVolumeMomentum(IStrategy):
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe.loc[
+        entry_condition = (
             (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & (dataframe["rsi_4h"] < 75)
             & (dataframe["close"] > dataframe["ema50"])
             & (dataframe["roc"] > 7.0)
             & (dataframe["btc_usdt_roc_1h"] > 4.0)
             & (dataframe["btc_usdt_rsi_1h"] > 50)
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.05),
-            "enter_long",
-        ] = 1
+            & (dataframe["volume"] > dataframe["vol_ma"] * 1.05)
+        )
+
+        if metadata.get("pair") == "BNB/USDT":
+            entry_condition &= False
+
+        dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
