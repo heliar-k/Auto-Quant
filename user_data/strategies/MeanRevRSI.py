@@ -50,6 +50,7 @@ class MeanRevRSI(IStrategy):
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         bb = ta.BBANDS(dataframe, timeperiod=20, nbdevup=2.2, nbdevdn=2.2)
         dataframe["bb_lower"] = bb["lowerband"]
+        dataframe["bb_mid"] = bb["middleband"]
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
@@ -63,5 +64,9 @@ class MeanRevRSI(IStrategy):
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe.loc[dataframe["rsi"] > 65, "exit_long"] = 1
+        dataframe.loc[
+            (dataframe["rsi"] > 65)
+            & (dataframe["close"] > dataframe["bb_mid"]),
+            "exit_long",
+        ] = 1
         return dataframe
