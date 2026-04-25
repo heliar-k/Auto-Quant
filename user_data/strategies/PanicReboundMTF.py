@@ -77,6 +77,9 @@ class PanicReboundMTF(IStrategy):
         if metadata.get("pair") == "AVAX/USDT":
             entry_condition &= False
 
+        if metadata.get("pair") == "SOL/USDT":
+            entry_condition &= False
+
         dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
 
