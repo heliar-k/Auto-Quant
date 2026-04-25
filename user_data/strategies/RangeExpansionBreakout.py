@@ -86,8 +86,8 @@ class RangeExpansionBreakout(IStrategy):
 
         if metadata.get("pair") == "BNB/USDT":
             entry_condition &= (
-                (dataframe["roc"] > 5.0)
-                & (dataframe["volume"] > dataframe["vol_ma"] * 1.35)
+                (dataframe["roc"] > 7.0)
+                & (dataframe["volume"] > dataframe["vol_ma"] * 1.6)
             )
 
         dataframe.loc[entry_condition, "enter_long"] = 1
