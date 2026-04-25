@@ -4,13 +4,13 @@ RangeExpansionBreakout — volatility expansion after compressed ranges
 Paradigm: volatility
 Hypothesis: SOL/BNB/AVAX-style crypto trends often begin as range compression followed
 by volume-backed expansion. A breakout above a prior 48h high should work only when
-4h trend is positive, 1h Bollinger width is expanding from a compressed state, and
-volume confirms participation. This tests a distinct volatility/breakout paradigm
-instead of another RSI or ROC variant.
+4h trend is positive, BTC is confirming market-wide risk appetite, 1h Bollinger width
+is expanding from a compressed state, and volume confirms participation. This tests a
+distinct volatility/breakout paradigm instead of another RSI or ROC variant.
 Parent: root
 Created: e772907
 Status: active
-Uses MTF: yes (4h EMA trend + 1d EMA regime)
+Uses MTF: yes (4h EMA trend + 1d EMA regime + cross-pair BTC momentum)
 """
 
 from pandas import DataFrame
@@ -46,6 +46,12 @@ class RangeExpansionBreakout(IStrategy):
         dataframe["ema100"] = ta.EMA(dataframe, timeperiod=100)
         return dataframe
 
+    @informative("1h", "BTC/USDT")
+    def populate_indicators_btc(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe["roc"] = ta.ROC(dataframe, timeperiod=20)
+        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
+        return dataframe
+
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
         dataframe["roc"] = ta.ROC(dataframe, timeperiod=12)
@@ -68,6 +74,8 @@ class RangeExpansionBreakout(IStrategy):
         dataframe.loc[
             (dataframe["close"] > dataframe["ema100_1d"])
             & (dataframe["ema9_4h"] > dataframe["ema34_4h"])
+            & (dataframe["btc_usdt_roc_1h"] > 2.0)
+            & (dataframe["btc_usdt_rsi_1h"] > 50)
             & was_compressed
             & is_expanding
             & (dataframe["close"] > dataframe["prior_high"])
