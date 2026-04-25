@@ -40,6 +40,7 @@ class TrendMtfConfluence(IStrategy):
     def populate_indicators_4h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["ema9"] = ta.EMA(dataframe, timeperiod=9)
         dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
+        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         return dataframe
 
     @informative("1d")
@@ -64,6 +65,7 @@ class TrendMtfConfluence(IStrategy):
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
             (dataframe["rsi"] > 78)
+            | (dataframe["rsi_4h"] > 75)
             | (dataframe["ema9_4h"] < dataframe["ema21_4h"]),
             "exit_long",
         ] = 1
