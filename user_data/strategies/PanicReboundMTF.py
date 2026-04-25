@@ -4,7 +4,7 @@ PanicReboundMTF — MTF panic mean-reversion across the 5-pair universe
 Paradigm: mean-reversion
 Hypothesis: Crypto majors revert best after synchronized weakness: a local 1h
 oversold/BB-lower event is higher quality when the traded pair is below-neutral on
-4h RSI, BTC is also washed out on 1h, and the pair remains in a constructive 1d
+4h RSI, BTC is also materially washed out on 1h, and the pair remains in a constructive 1d
 EMA50 regime. This tests whether v0.3.0's cross-pair + MTF context can separate
 recoverable panic from genuine trend failure.
 Parent: root
@@ -67,7 +67,7 @@ class PanicReboundMTF(IStrategy):
             (dataframe["close"] > dataframe["ema50_1d"])
             & (dataframe["close"] > dataframe["ema50"] * 0.92)
             & (dataframe["rsi_4h"] < 50)
-            & (dataframe["btc_usdt_rsi_1h"] < 42)
+            & (dataframe["btc_usdt_rsi_1h"] < 40)
             & (dataframe["btc_usdt_roc_1h"] < 1.5)
             & (dataframe["rsi"] < 32)
             & (dataframe["close"] < dataframe["bb_lower"])
