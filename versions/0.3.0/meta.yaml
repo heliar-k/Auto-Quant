@@ -5,6 +5,7 @@ date_completed: 2026-04-25
 branches:
   - autoresearch/apr24   # Run 1: peak Sharpe 1.07 (cross-pair breakout)
   - autoresearch/apr24b  # Run 2: 3 paradigms all ≥ 0.52 (paradigm mapping)
+  - autoresearch/apr25   # Run 3: 100-round pair-specialized low-DD portfolio
 
 intervention:
   summary: |
@@ -21,9 +22,10 @@ intervention:
     v0.2.0 peaked at clean Sharpe 0.67 (MACDMomentum, 1h single-pair family).
     v0.2.0's retrospective identified "MTF, cross-pair, per-asset metrics"
     as the three missing affordances. v0.3.0 adds all three simultaneously.
-    Two independent runs confirmed MTF + cross-pair are load-bearing:
+    Three independent runs confirmed MTF + cross-pair are load-bearing:
     - Run 1 (apr24): peak Sharpe 1.07 via cross-pair breakout (BTCLeaderBreakX)
     - Run 2 (apr24b): 3 paradigms all ≥ 0.52, systematic paradigm-specific MTF mapping
+    - Run 3 (apr25): 100 rounds, 3 paradigms all ≥ 0.53, pair-specialized low-DD sleeves
 
 asset:
   pairs: [BTC/USDT, ETH/USDT, SOL/USDT, BNB/USDT, AVAX/USDT]
@@ -54,17 +56,68 @@ experiments:
         fork: 0
         kill: 0
         stable: 73
+    - branch: autoresearch/apr25
+      rounds: 100
+      total_events: 300
+      peak_sharpe: 0.6558
+      events_by_type:
+        create: 3
+        evolve: 99
+        fork: 0
+        kill: 0
+        stable: 198
   combined:
-    total_rounds: 78
-    total_events: 240
+    total_rounds: 178
+    total_events: 540
     paradigms_tested: 5  # mean-reversion, trend-following, breakout, momentum, volatility
     paradigms_with_positive_edge: 4  # all except mean-reversion in run 1, all 3 in run 2
     key_finding: |
       MTF and cross-pair affordances are load-bearing but paradigm-specific.
       Cross-pair as PRIMARY signal (Run 1's BTCLeaderBreakX) produced the highest
       Sharpe (1.07). Cross-pair as SECONDARY filter (Run 2's MeanRevRSI BTC guard)
-      added +0.04. MTF filters help when aligned with paradigm direction (oversold
-      for MR, trend for TF) but harm when misaligned (1d regime on momentum).
+      added +0.04. Run 3 showed that per-pair reporting turns these affordances into
+      pair-specialized sleeves: BNB is mean-reversion-friendly but directionally weak,
+      while SOL/AVAX are directionally strong but poor panic-reversion targets.
+      MTF filters help when aligned with paradigm direction (oversold for MR, trend
+      for TF/momentum) but harm when misaligned.
+
+final_portfolio_run3:
+  - name: PanicReboundMTF
+    paradigm: mean-reversion
+    sharpe: 0.6558
+    max_dd_pct: -4.72
+    profit_pct: 39.33
+    peak_at_commit: 1e8c5bb
+    status: alive, RUN3_LEADER
+    key_structure: 1d EMA50 regime + local EMA50 distance 0.88 + 4h RSI<50
+      + BTC RSI<40/ROC<1.5 + BB(20,2.2) lower + volume>1.10x + exit RSI>66.
+      Trades BTC/ETH/BNB only; SOL/AVAX disabled.
+    per_pair_summary: "BNB dominates (Sharpe 0.43, pf 4.47); BTC/ETH positive diversifiers."
+
+  - name: LeaderVolumeMomentum
+    paradigm: momentum
+    sharpe: 0.6132
+    peak_sharpe: 0.6169
+    max_dd_pct: -4.74
+    profit_pct: 88.69
+    peak_at_commit: 1fe6860
+    final_commit: 1e8c5bb
+    status: alive
+    key_structure: 4h EMA9>21 + own ROC>7 + BTC ROC>4 + BTC RSI>50
+      + volume>1.05x + slow ROC<-4 exit. BNB disabled; BTC requires own ROC>7.75.
+    per_pair_summary: "SOL/AVAX/ETH drive directional profit; BTC diversifies; BNB disabled."
+
+  - name: RangeExpansionBreakout
+    paradigm: volatility-breakout
+    sharpe: 0.5341
+    max_dd_pct: -3.55
+    profit_pct: 24.03
+    peak_at_commit: 917f17c
+    status: alive
+    key_structure: 1d EMA100 + 4h EMA9>34 + BTC ROC>2/RSI>50 + BB compression/expansion
+      + pair-specific prior highs (BTC 48h, ETH/SOL 72h, AVAX 96h) + volume>1.15x
+      + EMA12/ROC/RSI82 exits. BNB disabled.
+    per_pair_summary: "SOL/AVAX strongest; BTC useful; ETH weak but diversifying; BNB disabled."
 
 final_portfolio_run2:
   - name: TrendMtfConfluence
