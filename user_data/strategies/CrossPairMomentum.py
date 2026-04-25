@@ -26,7 +26,7 @@ class CrossPairMomentum(IStrategy):
     can_short = False
 
     minimal_roi = {"0": 100}
-    stoploss = -0.12
+    stoploss = -0.99
 
     trailing_stop = False
     process_only_new_candles = True
