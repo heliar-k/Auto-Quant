@@ -8,7 +8,7 @@ aligned structure capture trend continuation while avoiding momentum-chasing
 entries. The MTF stack acts as a regime gate: only trade pullbacks when the
 higher-timeframe trend is intact.
 Parent: root
-Created: TBD
+Created: a38cfb7
 Status: active
 Uses MTF: yes (1d EMA200 regime, 4h EMA trend)
 Exit Mechanism: RSI>78 (overbought exhaustion) OR 4h EMA9<EMA21 (trend break)

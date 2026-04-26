@@ -8,7 +8,7 @@ amplified moves. Using BTC as the primary trigger (not just a filter) with
 local 1h trend + volume confirmation captures the leader/follower dynamic.
 Pair-agnostic entry conditions allow diversification across all 5 pairs.
 Parent: root
-Created: TBD
+Created: a38cfb7
 Status: active
 Uses MTF: yes (BTC 4h Donchian+ATR, local 4h trend, 1d regime)
 Exit Mechanism: dual exit — close<EMA21 OR ROC<-1.0
