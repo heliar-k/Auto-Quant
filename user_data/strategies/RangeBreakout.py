@@ -83,7 +83,7 @@ class RangeBreakout(IStrategy):
             & (dataframe["rsi"] > 50)
             & (dataframe["rsi"] < 72)
             & (dataframe["roc"] > 3.0)
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
+            & (dataframe["volume"] > dataframe["vol_ma"] * 1.3)
         )
 
         if metadata.get("pair") == "ETH/USDT":
