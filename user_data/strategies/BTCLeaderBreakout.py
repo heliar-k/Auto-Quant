@@ -62,7 +62,7 @@ class BTCLeaderBreakout(IStrategy):
             btc_break
             & (dataframe["btc_usdt_atr_4h"] > dataframe["btc_usdt_atr_ma20_4h"])
             & (dataframe["close"] > dataframe["ema50"])
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.5),
+            & (dataframe["volume"] > dataframe["vol_ma"] * 1.25),
             "enter_long",
         ] = 1
         return dataframe

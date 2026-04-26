@@ -44,6 +44,11 @@ class MomentumMTF(IStrategy):
         dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
         return dataframe
 
+    @informative("1h", "BTC/USDT")
+    def populate_indicators_btc(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe["roc"] = ta.ROC(dataframe, timeperiod=20)
+        return dataframe
+
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["roc"] = ta.ROC(dataframe, timeperiod=20)
         dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
@@ -55,6 +60,7 @@ class MomentumMTF(IStrategy):
             (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & (dataframe["close"] > dataframe["ema50"])
             & (dataframe["roc"] > 5.0)
+            & (dataframe["btc_usdt_roc_1h"] > 4.0)
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
         )
 
