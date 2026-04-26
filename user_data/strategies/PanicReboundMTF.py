@@ -68,8 +68,7 @@ class PanicReboundMTF(IStrategy):
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         entry_condition = (
-            (dataframe["close"] > dataframe["ema50_1d"])
-            & (dataframe["close"] > dataframe["ema50"] * 0.88)
+            (dataframe["close"] > dataframe["ema50"] * 0.88)
             & (dataframe["rsi_4h"] < 50)
             & (dataframe["btc_usdt_rsi_1h"] < 40)
             & (dataframe["btc_usdt_roc_1h"] < 1.5)
