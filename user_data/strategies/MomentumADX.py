@@ -87,7 +87,7 @@ class MomentumADX(IStrategy):
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
-            (dataframe["adx"] < 22)
+            (dataframe["adx"] < 20)
             | (dataframe["roc"] < -4.0),
             "exit_long",
         ] = 1
