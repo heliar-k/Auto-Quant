@@ -42,7 +42,7 @@ class SuperTrendPullback(IStrategy):
 
     @informative("1d")
     def populate_indicators_1d(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe["ema200"] = ta.EMA(dataframe, timeperiod=200)
+        dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
         return dataframe
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
@@ -60,7 +60,8 @@ class SuperTrendPullback(IStrategy):
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         entry_condition = (
-            dataframe["st_bullish"]
+            (dataframe["close"] > dataframe["ema50_1d"])
+            & dataframe["st_bullish"]
             & (dataframe["close"] > dataframe["ema50"])
             & (dataframe["rsi"] >= 25)
             & (dataframe["rsi"] <= 60)
