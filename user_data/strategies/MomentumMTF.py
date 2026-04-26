@@ -58,6 +58,10 @@ class MomentumMTF(IStrategy):
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.2),
             "enter_long",
         ] = 1
+
+        if metadata.get("pair") == "BNB/USDT":
+            dataframe["enter_long"] = 0
+
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:

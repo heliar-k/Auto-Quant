@@ -65,6 +65,10 @@ class BTCLeaderBreakout(IStrategy):
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.5),
             "enter_long",
         ] = 1
+
+        if metadata.get("pair") == "BTC/USDT":
+            dataframe["enter_long"] = 0
+
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
