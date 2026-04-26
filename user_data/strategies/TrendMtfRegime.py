@@ -60,13 +60,13 @@ class TrendMtfRegime(IStrategy):
             (dataframe["close"] > dataframe["ema200_1d"])
             & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & (dataframe["close"] > dataframe["ema50"])
-            & (dataframe["rsi"] > 30)
-            & (dataframe["rsi"] < 50)
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.1)
+            & (dataframe["rsi"] > 32)
+            & (dataframe["rsi"] < 48)
+            & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
         )
 
         if metadata.get("pair") == "AVAX/USDT":
-            entry_condition &= dataframe["volume"] > dataframe["vol_ma"] * 1.3
+            entry_condition &= False
 
         dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe

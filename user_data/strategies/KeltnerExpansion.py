@@ -73,8 +73,8 @@ class KeltnerExpansion(IStrategy):
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        was_compressed = dataframe["kc_width_min"] < dataframe["kc_width_ma"] * 0.72
-        is_expanding = dataframe["kc_width"] > dataframe["kc_width_ma"] * 0.85
+        was_compressed = dataframe["kc_width_min"] < dataframe["kc_width_ma"] * 0.68
+        is_expanding = dataframe["kc_width"] > dataframe["kc_width_ma"] * 0.88
         breakout_level = dataframe["prior_high_72"]
 
         if metadata.get("pair") == "AVAX/USDT":
@@ -86,21 +86,18 @@ class KeltnerExpansion(IStrategy):
         entry_condition = (
             (dataframe["close"] > dataframe["ema100_1d"])
             & (dataframe["ema9_4h"] > dataframe["ema34_4h"])
-            & (dataframe["btc_usdt_roc_1h"] > 1.0)
-            & (dataframe["btc_usdt_rsi_1h"] > 45)
+            & (dataframe["btc_usdt_roc_1h"] > 2.0)
+            & (dataframe["btc_usdt_rsi_1h"] > 50)
             & was_compressed
             & is_expanding
             & (dataframe["close"] > breakout_level)
             & (dataframe["close"] > dataframe["kc_upper"])
-            & (dataframe["roc"] > 2.0)
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.05)
+            & (dataframe["roc"] > 3.0)
+            & (dataframe["volume"] > dataframe["vol_ma"] * 1.10)
         )
 
-        if metadata.get("pair") == "BNB/USDT":
-            entry_condition &= (
-                (dataframe["close"] > dataframe["prior_high_96"])
-                & (dataframe["volume"] > dataframe["vol_ma"] * 1.3)
-            )
+        if metadata.get("pair") in ("SOL/USDT", "BNB/USDT"):
+            entry_condition &= False
 
         dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
