@@ -53,6 +53,7 @@ class MomentumADX(IStrategy):
     @informative("1h", "BTC/USDT")
     def populate_indicators_btc(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["roc"] = ta.ROC(dataframe, timeperiod=20)
+        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         return dataframe
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
@@ -73,6 +74,7 @@ class MomentumADX(IStrategy):
             & (dataframe["close"] > dataframe["ema50"])
             & (dataframe["roc"] > 5.0)
             & (dataframe["btc_usdt_roc_1h"] > 3.0)
+            & (dataframe["btc_usdt_rsi_1h"] > 50)
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
         )
 
