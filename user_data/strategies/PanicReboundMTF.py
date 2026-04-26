@@ -42,13 +42,13 @@ class PanicReboundMTF(IStrategy):
 
     @informative("1h", "BTC/USDT")
     def populate_indicators_btc(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=15)
+        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         dataframe["roc"] = ta.ROC(dataframe, timeperiod=12)
         return dataframe
 
     @informative("4h")
     def populate_indicators_4h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=15)
+        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
         return dataframe
 
@@ -58,7 +58,7 @@ class PanicReboundMTF(IStrategy):
         return dataframe
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=15)
+        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
         bbands = ta.BBANDS(dataframe, timeperiod=20, nbdevup=2.2, nbdevdn=2.2)
         dataframe["bb_lower"] = bbands["lowerband"]
