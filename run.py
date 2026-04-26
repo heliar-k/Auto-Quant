@@ -221,7 +221,7 @@ def main() -> int:
             print_error(name, commit, err)
             n_err += 1
         print()  # blank line between strategy blocks
-        time.sleep(5)  # avoid Binance API rate limiting
+        time.sleep(10)  # avoid Binance API rate limiting
 
     print(f"Done: {n_ok} succeeded, {n_err} failed.")
     return 0 if n_err == 0 else 1
