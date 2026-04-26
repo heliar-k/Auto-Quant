@@ -72,8 +72,8 @@ class BTCLeaderBreakout(IStrategy):
         btc_breakout = (
             dataframe["btc_usdt_close_4h"] > dataframe["btc_usdt_donchian_high_4h"]
         )
-        btc_atr_expand = (
-            dataframe["btc_usdt_atr_4h"] > dataframe["btc_usdt_atr_ma_4h"] * 1.05
+        btc_vol_expand = (
+            dataframe["btc_usdt_atr_4h"] > dataframe["btc_usdt_atr_ma_4h"]
         )
         btc_volume_ok = (
             dataframe["btc_usdt_volume_4h"] > dataframe["btc_usdt_volume_ma_4h"] * 1.1
@@ -82,7 +82,7 @@ class BTCLeaderBreakout(IStrategy):
         entry_condition = (
             (dataframe["close"] > dataframe["ema100_1d"])
             & btc_breakout
-            & btc_atr_expand
+            & btc_vol_expand
             & btc_volume_ok
             & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & (dataframe["close"] > dataframe["ema50"])
