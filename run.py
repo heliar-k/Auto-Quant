@@ -149,6 +149,81 @@ def extract_metrics(results: dict[str, Any], strategy_name: str) -> dict[str, An
     return {"aggregate": aggregate, "per_pair": per_pair}
 
 
+def compute_benchmark() -> dict[str, Any]:
+    """Buy-and-hold benchmark for each pair and equal-weight portfolio."""
+    import pandas as pd
+
+    start_ts = pd.Timestamp("2023-01-01", tz="UTC")
+    end_ts = pd.Timestamp("2026-01-01", tz="UTC")
+
+    per_pair: dict[str, dict[str, float]] = {}
+    for pair in PAIRS:
+        pair_slug = pair.replace("/", "_")
+        feather_path = USER_DATA / "data" / f"{pair_slug}-1h.feather"
+        if not feather_path.exists():
+            continue
+        df = pd.read_feather(feather_path)
+        if df["date"].dt.tz is None:
+            df["date"] = df["date"].dt.tz_localize("UTC")
+        mask = (df["date"] >= start_ts) & (df["date"] < end_ts)
+        close = df.loc[mask, "close"].values
+        if len(close) == 0:
+            continue
+        start_price = float(close[0])
+        end_price = float(close[-1])
+        profit_pct = (end_price - start_price) / start_price * 100
+
+        peak = float(close[0])
+        max_dd = 0.0
+        for price in close:
+            p = float(price)
+            if p > peak:
+                peak = p
+            dd = (p - peak) / peak * 100
+            if dd < max_dd:
+                max_dd = dd
+
+        per_pair[pair] = {
+            "profit_pct": round(profit_pct, 2),
+            "max_dd_pct": round(max_dd, 2),
+        }
+
+    if per_pair:
+        avg_profit = sum(v["profit_pct"] for v in per_pair.values()) / len(per_pair)
+        avg_dd = sum(v["max_dd_pct"] for v in per_pair.values()) / len(per_pair)
+    else:
+        avg_profit = 0.0
+        avg_dd = 0.0
+
+    return {
+        "per_pair": per_pair,
+        "equal_weight": {
+            "profit_pct": round(avg_profit, 2),
+            "max_dd_pct": round(avg_dd, 2),
+        },
+    }
+
+
+def print_benchmark(bench: dict[str, Any]) -> None:
+    ew = bench["equal_weight"]
+    print("---")
+    print("strategy:                __benchmark__")
+    print("type:                    buy-and-hold")
+    print(f"timerange:               {TIMERANGE}")
+    print(f"equal_weight_profit_pct: {ew['profit_pct']:.2f}")
+    print(f"equal_weight_dd_pct:     {ew['max_dd_pct']:.2f}")
+    print("per_pair:")
+    for pair in PAIRS:
+        m = bench["per_pair"].get(pair)
+        if m is None:
+            print(f"  {pair}: (no data)")
+            continue
+        print(
+            f"  {pair}: profit_pct={m['profit_pct']:.2f} "
+            f"dd_pct={m['max_dd_pct']:.2f}"
+        )
+
+
 def print_summary(strategy_name: str, commit: str, bundle: dict[str, Any]) -> None:
     agg = bundle["aggregate"]
     per_pair = bundle["per_pair"]
@@ -220,6 +295,14 @@ def main() -> int:
             print_error(name, commit, err)
             n_err += 1
         print()  # blank line between strategy blocks
+
+    # Benchmark
+    try:
+        bench = compute_benchmark()
+        print_benchmark(bench)
+        print()
+    except Exception as e:
+        print(f"(benchmark unavailable: {e})", file=sys.stderr)
 
     print(f"Done: {n_ok} succeeded, {n_err} failed.")
     return 0 if n_err == 0 else 1
