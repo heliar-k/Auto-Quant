@@ -52,7 +52,7 @@ class LeaderVolumeMomentum(IStrategy):
         return dataframe
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe["roc"] = ta.ROC(dataframe, timeperiod=22)
+        dataframe["roc"] = ta.ROC(dataframe, timeperiod=20)
         dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
         dataframe["vol_ma"] = dataframe["volume"].rolling(20).mean()
         return dataframe

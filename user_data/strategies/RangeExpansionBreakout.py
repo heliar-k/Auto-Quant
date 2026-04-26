@@ -63,7 +63,7 @@ class RangeExpansionBreakout(IStrategy):
         dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
         dataframe["roc"] = ta.ROC(dataframe, timeperiod=12)
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
-        bbands = ta.BBANDS(dataframe, timeperiod=22, nbdevup=2.0, nbdevdn=2.0)
+        bbands = ta.BBANDS(dataframe, timeperiod=20, nbdevup=2.0, nbdevdn=2.0)
         dataframe["bb_upper"] = bbands["upperband"]
         dataframe["bb_lower"] = bbands["lowerband"]
         dataframe["bb_mid"] = bbands["middleband"]
@@ -92,13 +92,12 @@ class RangeExpansionBreakout(IStrategy):
             & (dataframe["ema9_4h"] > dataframe["ema34_4h"])
             & (dataframe["btc_usdt_roc_1h"] > 2.0)
             & (dataframe["btc_usdt_rsi_1h"] > 50)
-            & (dataframe["btc_usdt_rsi_1h"] > 50)
             & was_compressed
             & is_expanding
             & (dataframe["close"] > breakout_level)
             & (dataframe["close"] > dataframe["bb_upper"])
             & (dataframe["roc"] > 3.0)
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.18)
+            & (dataframe["volume"] > dataframe["vol_ma"] * 1.15)
         )
 
         if metadata.get("pair") == "BNB/USDT":
