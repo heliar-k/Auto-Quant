@@ -73,6 +73,7 @@ class PanicReboundMTF(IStrategy):
             & (dataframe["rsi_4h"] < 50)
             & (dataframe["btc_usdt_rsi_1h"] < 40)
             & (dataframe["btc_usdt_roc_1h"] < 1.5)
+            & (dataframe["btc_usdt_roc_1h"] < 1.5)
             & (dataframe["rsi"] < 32)
             & (dataframe["close"] < dataframe["bb_lower"])
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.10)

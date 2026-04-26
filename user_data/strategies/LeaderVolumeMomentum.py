@@ -64,6 +64,7 @@ class LeaderVolumeMomentum(IStrategy):
             & (dataframe["roc"] > 7.0)
             & (dataframe["btc_usdt_roc_1h"] > 4.0)
             & (dataframe["btc_usdt_rsi_1h"] > 50)
+            & (dataframe["btc_usdt_rsi_1h"] > 50)
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.05)
         )
 
