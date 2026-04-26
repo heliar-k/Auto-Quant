@@ -76,7 +76,7 @@ class BTCLeaderBreakout(IStrategy):
             dataframe["btc_usdt_atr_4h"] > dataframe["btc_usdt_atr_ma_4h"]
         )
         btc_volume_ok = (
-            dataframe["btc_usdt_volume_4h"] > dataframe["btc_usdt_volume_ma_4h"] * 1.2
+            dataframe["btc_usdt_volume_4h"] > dataframe["btc_usdt_volume_ma_4h"] * 1.15
         )
 
         entry_condition = (
