@@ -10,6 +10,10 @@ Parent: root
 Created: e772907
 Status: active
 Uses MTF: yes (4h trend + cross-pair BTC ROC)
+Exit Mechanism: pure ROC < -4.0 (slow momentum-failure exit)
+Exit Rationale: momentum strategies must let trends run; premature exits clip
+winners. Pure ROC exit catches genuine momentum failure without the false
+positives that EMA-based exits trigger during pullbacks within a trend
 """
 
 from pandas import DataFrame

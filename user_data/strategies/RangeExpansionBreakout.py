@@ -11,6 +11,11 @@ Parent: root
 Created: e772907
 Status: active
 Uses MTF: yes (4h EMA trend + 1d EMA regime + cross-pair BTC momentum)
+Exit Mechanism: fast multi-condition (close<EMA12 OR ROC<-3 OR RSI>82)
+Exit Rationale: breakout energy dissipates quickly; three independent failure
+detectors (trend break, momentum fade, overbought exhaustion) each capture a
+different failure mode — waiting for a single slow exit would surrender the
+gains from the initial expansion
 """
 
 from pandas import DataFrame
