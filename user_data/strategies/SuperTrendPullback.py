@@ -100,7 +100,8 @@ class SuperTrendPullback(IStrategy):
         st_just_flipped = dataframe["st_direction"].shift(1) <= 0
 
         entry_condition = (
-            st_bullish
+            (dataframe["ema9_4h"] > dataframe["ema21_4h"])
+            & st_bullish
             & st_just_flipped
             & (dataframe["close"] > dataframe["ema50"])
             & (dataframe["rsi"] > 25)
