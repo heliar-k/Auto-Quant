@@ -63,7 +63,7 @@ class RangeExpansionBreakout(IStrategy):
         dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
         dataframe["roc"] = ta.ROC(dataframe, timeperiod=12)
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
-        bbands = ta.BBANDS(dataframe, timeperiod=20, nbdevup=2.0, nbdevdn=2.0)
+        bbands = ta.BBANDS(dataframe, timeperiod=22, nbdevup=2.0, nbdevdn=2.0)
         dataframe["bb_upper"] = bbands["upperband"]
         dataframe["bb_lower"] = bbands["lowerband"]
         dataframe["bb_mid"] = bbands["middleband"]

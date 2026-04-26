@@ -82,7 +82,7 @@ class SuperTrendPullback(IStrategy):
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
             ~dataframe["st_bullish"]
-            | (dataframe["rsi"] > 72),
+            | (dataframe["rsi"] > 75),
             "exit_long",
         ] = 1
         return dataframe

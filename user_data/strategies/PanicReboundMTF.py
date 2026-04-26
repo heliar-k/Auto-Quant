@@ -60,7 +60,7 @@ class PanicReboundMTF(IStrategy):
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
-        bbands = ta.BBANDS(dataframe, timeperiod=20, nbdevup=2.2, nbdevdn=2.2)
+        bbands = ta.BBANDS(dataframe, timeperiod=22, nbdevup=2.2, nbdevdn=2.2)
         dataframe["bb_lower"] = bbands["lowerband"]
         dataframe["bb_mid"] = bbands["middleband"]
         dataframe["vol_ma"] = dataframe["volume"].rolling(24).mean()
