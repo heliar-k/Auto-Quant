@@ -63,8 +63,8 @@ class SuperTrendPullback(IStrategy):
             (dataframe["close"] > dataframe["ema200_1d"])
             & dataframe["st_bullish"]
             & (dataframe["close"] > dataframe["ema50"])
-            & (dataframe["rsi"] >= 30)
-            & (dataframe["rsi"] <= 50)
+            & (dataframe["rsi"] >= 28)
+            & (dataframe["rsi"] <= 55)
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.1)
         )
 
