@@ -46,7 +46,7 @@ class BTCLeaderBreakout(IStrategy):
         return dataframe
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe["ema13"] = ta.EMA(dataframe, timeperiod=13)
+        dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
         dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
         dataframe["vol_ma"] = dataframe["volume"].rolling(20).mean()
         return dataframe
@@ -68,5 +68,5 @@ class BTCLeaderBreakout(IStrategy):
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe.loc[dataframe["close"] < dataframe["ema13"], "exit_long"] = 1
+        dataframe.loc[dataframe["close"] < dataframe["ema21"], "exit_long"] = 1
         return dataframe
