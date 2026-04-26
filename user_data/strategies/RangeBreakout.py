@@ -79,7 +79,7 @@ class RangeBreakout(IStrategy):
         entry_condition = (
             (dataframe["close"] > dataframe["ema100_1d"])
             & (dataframe["ema9_4h"] > dataframe["ema34_4h"])
-            & (dataframe["btc_usdt_roc_1h"] > 2.5)
+            & (dataframe["btc_usdt_roc_1h"] > 3.0)
             & (dataframe["btc_usdt_rsi_1h"] > 50)
             & (dataframe["btc_usdt_close_1h"] > dataframe["btc_usdt_ema50_1h"])
             & (dataframe["close"] > breakout_level)
