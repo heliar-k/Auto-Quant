@@ -51,17 +51,23 @@ class MomentumMTF(IStrategy):
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe.loc[
+        entry_condition = (
             (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & (dataframe["close"] > dataframe["ema50"])
             & (dataframe["roc"] > 5.0)
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.2),
-            "enter_long",
-        ] = 1
+            & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
+        )
 
         if metadata.get("pair") == "BNB/USDT":
-            dataframe["enter_long"] = 0
+            entry_condition &= False
 
+        if metadata.get("pair") == "ETH/USDT":
+            entry_condition &= dataframe["roc"] > 7.0
+
+        if metadata.get("pair") == "AVAX/USDT":
+            entry_condition &= dataframe["roc"] > 7.0
+
+        dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:

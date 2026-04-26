@@ -66,7 +66,7 @@ class BTCLeaderBreakout(IStrategy):
             "enter_long",
         ] = 1
 
-        if metadata.get("pair") == "BTC/USDT":
+        if metadata.get("pair") == "BNB/USDT":
             dataframe["enter_long"] = 0
 
         return dataframe
