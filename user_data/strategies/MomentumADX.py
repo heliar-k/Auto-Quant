@@ -75,7 +75,7 @@ class MomentumADX(IStrategy):
             & (dataframe["roc"] > 4.0)
             & (dataframe["btc_usdt_roc_1h"] > 3.0)
             & (dataframe["btc_usdt_rsi_1h"] > 50)
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.3)
+            & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
         )
 
         if metadata.get("pair") == "BNB/USDT":
