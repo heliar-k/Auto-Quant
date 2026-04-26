@@ -106,7 +106,7 @@ class SuperTrendPullback(IStrategy):
             & st_just_flipped
             & (dataframe["close"] > dataframe["ema50"])
             & (dataframe["rsi"] > 30)
-            & (dataframe["rsi"] < 65)
+            & (dataframe["rsi"] < 68)
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.3)
         )
 
