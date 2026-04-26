@@ -64,7 +64,7 @@ class TrendMtfRegime(IStrategy):
         entry_condition = (
             (dataframe["close"] > dataframe["ema200_1d"])
             & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
-            & (dataframe["btc_usdt_rsi_1h"] > 42)
+            & (dataframe["btc_usdt_rsi_1h"] > 40)
             & (dataframe["btc_usdt_close_1h"] > dataframe["btc_usdt_ema50_1h"])
             & (dataframe["close"] > dataframe["ema50"])
             & (dataframe["rsi"] > 30)
