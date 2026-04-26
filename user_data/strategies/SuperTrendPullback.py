@@ -96,17 +96,14 @@ class SuperTrendPullback(IStrategy):
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        st_bullish = dataframe["st_direction"] > 0
-        st_just_flipped = dataframe["st_direction"].shift(1) <= 0
-
         entry_condition = (
-            (dataframe["ema9_4h"] > dataframe["ema21_4h"])
-            & st_bullish
-            & st_just_flipped
+            (dataframe["close"] > dataframe["ema200_1d"])
+            & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
+            & (dataframe["st_direction"] > 0)
             & (dataframe["close"] > dataframe["ema50"])
             & (dataframe["rsi"] > 25)
             & (dataframe["rsi"] < 60)
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.1)
+            & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
         )
 
         if metadata.get("pair") == "AVAX/USDT":
