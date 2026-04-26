@@ -10,7 +10,7 @@ Parent: root
 Created: 1d43a28
 Status: active
 Uses MTF: yes (1d EMA200 regime, 4h EMA trend)
-Exit Mechanism: SuperTrend flips bearish OR RSI>75 (trend exhaustion with 4h trend filter)
+Exit Mechanism: EMA21 trend break OR RSI>75 OR SuperTrend bearish (triple exit)
 Exit Rationale: SuperTrend flip is the primary structural exit — when the
 ATR-based stop reverses, the trend is objectively broken. RSI>75 provides a
 secondary exit for overbought conditions within an intact trend, taking profits
@@ -55,11 +55,12 @@ class SuperTrendPullback(IStrategy):
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         atr = ta.ATR(dataframe, timeperiod=10)
         hl_avg = (dataframe["high"] + dataframe["low"]) / 2
-        multiplier = 3.0
+        multiplier = 2.5
         dataframe["st_upper"] = hl_avg + multiplier * atr
         dataframe["st_lower"] = hl_avg - multiplier * atr
         # SuperTrend bullish: close above st_lower after being above it
         dataframe["st_bullish"] = dataframe["close"] > dataframe["st_lower"].shift(1)
+        dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
         dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
         dataframe["vol_ma"] = dataframe["volume"].rolling(20).mean()
         return dataframe
@@ -70,8 +71,8 @@ class SuperTrendPullback(IStrategy):
             & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & dataframe["st_bullish"]
             & (dataframe["close"] > dataframe["ema50"])
-            & (dataframe["rsi"] >= 32)
-            & (dataframe["rsi"] <= 48)
+            & (dataframe["rsi"] >= 30)
+            & (dataframe["rsi"] <= 50)
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.1)
         )
 
@@ -80,8 +81,9 @@ class SuperTrendPullback(IStrategy):
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
-            ~dataframe["st_bullish"]
-            | (dataframe["rsi"] > 75),
+            (dataframe["close"] < dataframe["ema21"])
+            | (dataframe["rsi"] > 75)
+            | ~dataframe["st_bullish"],
             "exit_long",
         ] = 1
         return dataframe
