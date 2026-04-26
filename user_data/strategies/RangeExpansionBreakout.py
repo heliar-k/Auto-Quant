@@ -77,7 +77,7 @@ class RangeExpansionBreakout(IStrategy):
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        was_compressed = dataframe["bb_width_min"] < dataframe["bb_width_ma"] * 0.65
+        was_compressed = dataframe["bb_width_min"] < dataframe["bb_width_ma"] * 0.68
         is_expanding = dataframe["bb_width"] > dataframe["bb_width_ma"] * 0.92
         breakout_level = dataframe["prior_high"]
 
@@ -91,6 +91,7 @@ class RangeExpansionBreakout(IStrategy):
             (dataframe["close"] > dataframe["ema100_1d"])
             & (dataframe["ema9_4h"] > dataframe["ema34_4h"])
             & (dataframe["btc_usdt_roc_1h"] > 2.0)
+            & (dataframe["btc_usdt_rsi_1h"] > 50)
             & was_compressed
             & is_expanding
             & (dataframe["close"] > breakout_level)

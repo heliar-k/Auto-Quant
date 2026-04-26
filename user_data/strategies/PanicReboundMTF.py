@@ -70,8 +70,9 @@ class PanicReboundMTF(IStrategy):
         entry_condition = (
             (dataframe["close"] > dataframe["ema50_1d"])
             & (dataframe["close"] > dataframe["ema50"] * 0.88)
-            & (dataframe["rsi_4h"] < 48)
+            & (dataframe["rsi_4h"] < 50)
             & (dataframe["btc_usdt_rsi_1h"] < 40)
+            & (dataframe["btc_usdt_roc_1h"] < 1.5)
             & (dataframe["rsi"] < 32)
             & (dataframe["close"] < dataframe["bb_lower"])
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.10)

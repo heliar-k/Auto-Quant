@@ -62,7 +62,8 @@ class LeaderVolumeMomentum(IStrategy):
             (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & (dataframe["close"] > dataframe["ema50"])
             & (dataframe["roc"] > 7.0)
-            & (dataframe["btc_usdt_roc_1h"] > 5.0)
+            & (dataframe["btc_usdt_roc_1h"] > 4.0)
+            & (dataframe["btc_usdt_rsi_1h"] > 50)
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.05)
         )
 

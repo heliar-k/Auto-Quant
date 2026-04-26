@@ -7,10 +7,10 @@ than EMA crosses on 1h crypto because it adapts to volatility. When SuperTrend
 is bullish and 1d EMA200 confirms the macro regime, buying RSI pullbacks within
 the trend captures continuation with lower heat than breakout-chasing entries.
 Parent: root
-Created: TBD
+Created: 1d43a28
 Status: active
-Uses MTF: yes (1d EMA200 regime)
-Exit Mechanism: SuperTrend flips bearish OR RSI>75 (trend exhaustion)
+Uses MTF: yes (1d EMA200 regime, 4h EMA trend)
+Exit Mechanism: SuperTrend flips bearish OR RSI>75 (trend exhaustion with 4h trend filter)
 Exit Rationale: SuperTrend flip is the primary structural exit — when the
 ATR-based stop reverses, the trend is objectively broken. RSI>75 provides a
 secondary exit for overbought conditions within an intact trend, taking profits
@@ -40,6 +40,12 @@ class SuperTrendPullback(IStrategy):
 
     startup_candle_count: int = 300
 
+    @informative("4h")
+    def populate_indicators_4h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe["ema9"] = ta.EMA(dataframe, timeperiod=9)
+        dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
+        return dataframe
+
     @informative("1d")
     def populate_indicators_1d(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["ema200"] = ta.EMA(dataframe, timeperiod=200)
@@ -61,10 +67,11 @@ class SuperTrendPullback(IStrategy):
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         entry_condition = (
             (dataframe["close"] > dataframe["ema200_1d"])
+            & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & dataframe["st_bullish"]
             & (dataframe["close"] > dataframe["ema50"])
-            & (dataframe["rsi"] >= 30)
-            & (dataframe["rsi"] <= 50)
+            & (dataframe["rsi"] >= 32)
+            & (dataframe["rsi"] <= 48)
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.1)
         )
 
