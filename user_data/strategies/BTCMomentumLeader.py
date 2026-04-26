@@ -8,7 +8,7 @@ capture the rate of change — a BTC momentum burst often precedes altcoin moves
 regardless of absolute price level. Local 1h trend + volume confirmation ensures
 the altcoin is participating in the move.
 Parent: root
-Created: TBD
+Created: 9761eed
 Status: active
 Uses MTF: yes (BTC 4h ROC, local 4h EMA trend, 1d EMA200 regime)
 Exit Mechanism: dual exit — close<EMA21 OR ROC<-2.0
@@ -64,15 +64,15 @@ class BTCMomentumLeader(IStrategy):
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        btc_momentum_surge = dataframe["btc_usdt_roc_4h"] > 3.0
+        btc_momentum_surge = dataframe["btc_usdt_roc_4h"] > 5.0
         local_trend = (
             (dataframe["close"] > dataframe["ema200_1d"])
             & (dataframe["close"] > dataframe["ema50"])
             & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
         )
-        volume_ok = dataframe["volume"] > dataframe["vol_ma"] * 1.3
+        volume_ok = dataframe["volume"] > dataframe["vol_ma"] * 1.5
 
-        entry_condition = btc_momentum_surge & local_trend & volume_ok
+        entry_condition = btc_momentum_surge & local_trend & volume_ok & (dataframe["roc"] > 3.0)
 
         dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
