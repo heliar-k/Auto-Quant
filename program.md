@@ -73,7 +73,7 @@ Once you get confirmation, kick off the experimentation.
 ## Experimentation
 
 Each round runs a backtest on ALL active strategies on a **fixed timerange**
-(`20230101-20251231`) across the **5-pair portfolio** (BTC, ETH, SOL, BNB,
+(`20210101-20251231`) across the **5-pair portfolio** (BTC, ETH, SOL, BNB,
 AVAX) at 1h base. `run.py` emits one `---` summary block per strategy,
 containing both portfolio-aggregate metrics AND per-pair breakdown.
 
@@ -267,7 +267,7 @@ Once `run.py` finishes, stdout has one `---` block per strategy, like:
 ---
 strategy:         MeanRevRSI
 commit:           abc1234
-timerange:        20230101-20251231
+timerange:        20210101-20251231
 sharpe:           0.8234
 sortino:          1.0412
 calmar:           0.5821
