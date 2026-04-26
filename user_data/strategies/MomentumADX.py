@@ -37,12 +37,17 @@ class MomentumADX(IStrategy):
     exit_profit_only = False
     ignore_roi_if_entry_signal = False
 
-    startup_candle_count: int = 180
+    startup_candle_count: int = 300
 
     @informative("4h")
     def populate_indicators_4h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["ema9"] = ta.EMA(dataframe, timeperiod=9)
         dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
+        return dataframe
+
+    @informative("1d")
+    def populate_indicators_1d(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe["ema200"] = ta.EMA(dataframe, timeperiod=200)
         return dataframe
 
     @informative("1h", "BTC/USDT")
@@ -61,7 +66,8 @@ class MomentumADX(IStrategy):
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         entry_condition = (
-            (dataframe["ema9_4h"] > dataframe["ema21_4h"])
+            (dataframe["close"] > dataframe["ema200_1d"])
+            & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & (dataframe["adx"] > 25)
             & (dataframe["plus_di"] > dataframe["minus_di"])
             & (dataframe["close"] > dataframe["ema50"])
