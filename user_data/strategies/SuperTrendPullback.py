@@ -107,7 +107,7 @@ class SuperTrendPullback(IStrategy):
             & (dataframe["close"] > dataframe["ema50"])
             & (dataframe["rsi"] > 28)
             & (dataframe["rsi"] < 74)
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.0)
+            & (dataframe["volume"] > dataframe["vol_ma"] * 0.95)
         )
 
         if metadata.get("pair") == "AVAX/USDT":
