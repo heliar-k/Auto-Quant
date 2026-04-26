@@ -59,7 +59,7 @@ class MomentumMTF(IStrategy):
         entry_condition = (
             (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & (dataframe["close"] > dataframe["ema50"])
-            & (dataframe["roc"] > 6.0)
+            & (dataframe["roc"] > 5.0)
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
         )
 
@@ -71,6 +71,7 @@ class MomentumMTF(IStrategy):
 
         if metadata.get("pair") == "AVAX/USDT":
             entry_condition &= dataframe["roc"] > 7.0
+            entry_condition &= dataframe["volume"] > dataframe["vol_ma"] * 1.5
 
         dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe

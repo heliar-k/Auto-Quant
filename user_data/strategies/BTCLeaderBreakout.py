@@ -68,6 +68,9 @@ class BTCLeaderBreakout(IStrategy):
         if metadata.get("pair") == "BTC/USDT":
             entry_condition &= dataframe["btc_usdt_atr_4h"] > dataframe["btc_usdt_atr_ma20_4h"] * 1.2
 
+        if metadata.get("pair") == "BNB/USDT":
+            entry_condition &= dataframe["volume"] > dataframe["vol_ma"] * 2.0
+
         dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
 
