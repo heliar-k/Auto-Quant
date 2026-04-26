@@ -1,49 +1,30 @@
 version: 0.4.0
 title: Multi-regime + out-of-sample + cap=5 + exit-as-design
 date_started: 2026-04-26
-date_completed: ~
+date_completed: 2026-04-26
 branches:
   - v0.4.0
+  - autoresearch/apr26
 
 intervention:
   summary: |
     Four structural improvements on top of v0.3.x's validated paradigm suite:
 
     (1) Multi-regime backtesting: extend timerange to 2021-01-01 → 2026-01-29,
-        covering the 2021 bull, 2022 bear, and 2023-2025 bull. All v0.3.x
-        strategies were only tested in 2023-2025. This is the single most
-        important open question from all four v0.3.x retrospectives.
-
+        covering the 2021 bull, 2022 bear, and 2023-2025 bull.
     (2) Out-of-sample validation: train on 2023-01-01 → 2024-12-31, validate
-        on 2025-01-01 → 2026-01-29. All v0.3.x tuning used the full timerange
-        for both iteration and evaluation. A simple train/test split prevents
-        overfitting without requiring walk-forward complexity.
-
-    (3) Cap=5: raise the hard cap from 3 to 5 active strategies. v0.3.x
-        validated 4 distinct paradigms (cross-pair-primary, momentum,
-        mean-reversion, volatility-breakout) but cap=3 prevented all four
-        from coexisting. cap=5 allows all validated paradigms plus one
-        experimental slot.
-
-    (4) Exit mechanism as first-class design object: v0.3.1's clearest
-        finding was that exit mechanisms are paradigm-specific — the same
-        dual-exit pattern lifted cross-pair-primary (+0.02 Sharpe) but
-        destroyed momentum (-0.29 Sharpe). v0.4.0 requires each strategy
-        to declare its exit logic as a primary design decision, with
-        explicit rationale linking exit mechanism to paradigm.
+        on 2025-01-01 → 2026-01-29.
+    (3) Cap=5: raise the hard cap from 3 to 5 active strategies.
+    (4) Exit mechanism as first-class design object.
   vs_v0_3_x: |
     v0.3.0 (3 runs, 178 rounds) + v0.3.1 (1 run, 19 rounds) validated 4
     distinct paradigms, injected buy-and-hold benchmark, and established
     that asset × paradigm interaction dominates aggregate tuning.
 
-    Four structural gaps remain:
-    1. All runs used 2023-2025 only — no bear market tested.
-    2. All tuning used the full timerange — no out-of-sample validation.
-    3. Cap=3 prevented all 4 validated paradigms from coexisting.
-    4. Exit mechanisms were discovered as paradigm-specific but not
-       elevated to a first-class design concern.
-
-    v0.4.0 addresses all four simultaneously.
+    v0.4.0 adds train/test split and multi-regime data. The split proved
+    critical: removing 1d regime filters boosted train Sharpe dramatically
+    (TrendMtfConfluence 1.40→2.16) but caused catastrophic test failure
+    (-1.31). The architecture caught what the loop could not.
 
 asset:
   pairs: [BTC/USDT, ETH/USDT, SOL/USDT, BNB/USDT, AVAX/USDT]
@@ -51,49 +32,229 @@ asset:
   timeframes_informative: [4h, 1d]
   timerange_train: 20230101-20241231
   timerange_test: 20250101-20260129
-  timerange_full: 20210101-20260129  # multi-regime: 2021 bull + 2022 bear + 2023-2025 bull
+  timerange_full: 20210101-20260129
   exchange: binance
 
-planned_improvements:
-  - id: multi-regime
-    title: Multi-regime backtesting (bear + bull)
-    status: planned
-    rationale: |
-      All four v0.3.x runs used 2023-2025 only — a nearly uninterrupted bull.
-      No strategy has been tested in a bear market. The most critical open
-      question: do cross-pair primary signals survive when BTC breakouts fail?
-      Does momentum collapse in trend reversals? Does mean-reversion improve
-      in bear markets? Extending to 2021-2025 covers one full cycle.
-    scope: data download (prepare.py) + timerange extension in run.py
+benchmark:
+  train:
+    equal_weight_profit_pct: 571.12
+    equal_weight_dd_pct: -48.21
+    per_pair:
+      BTC/USDT: { profit_pct: 466.11, dd_pct: -32.31 }
+      ETH/USDT: { profit_pct: 179.52, dd_pct: -46.66 }
+      SOL/USDT: { profit_pct: 1794.99, dd_pct: -47.18 }
+      BNB/USDT: { profit_pct: 185.84, dd_pct: -42.65 }
+      AVAX/USDT: { profit_pct: 229.12, dd_pct: -72.26 }
 
-  - id: out-of-sample
-    title: Train/test split validation
-    status: planned
-    rationale: |
-      Train on 2023-2024, test on 2025-2026 Q1. The experiment loop uses the
-      train period for all iteration. After the loop concludes, strategies are
-      validated once on the held-out test period. This is the simplest form
-      of out-of-sample validation — no walk-forward complexity needed.
-    scope: run.py timerange override mechanism + final validation step
+experiment:
+  branch: autoresearch/apr26
+  rounds: 50
+  total_events: 250
+  peak_train_sharpe: 2.1607
+  peak_test_sharpe: 0.2598
+  peak_full_sharpe: 0.8926
+  events_by_type:
+    create: 5
+    evolve: 45
+    fork: 2
+    kill: 3
+    stable: 195
+  key_finding: |
+    Train/test split caught massive overfitting. Removing 1d regime filters
+    boosted train Sharpe (TrendMtf +0.76, SuperTrend +1.08) but destroyed
+    test performance (TrendMtf 2.16→-1.31, SuperTrend 1.81→-0.77). The 1d
+    regime filter is structural regularization — its removal inflates train
+    metrics at the cost of generalization. LeaderVolumeMomentum is the most
+    robust strategy (positive on train, test, and full multi-regime).
 
-  - id: cap-5
-    title: Raise hard cap from 3 to 5 active strategies
-    status: planned
-    rationale: |
-      v0.3.x validated 4 distinct paradigms: cross-pair-primary, momentum,
-      mean-reversion, and volatility-breakout. cap=3 prevented all four from
-      coexisting, and fork was used only once across 197 rounds. cap=5 allows
-      all validated paradigms to form a permanent portfolio plus one slot for
-      experimental strategies.
-    scope: program.md rule change + config.json max_open_trades → 5 (already 5)
+    SuperTrend is a viable new paradigm (first attempt 0.70 train, 0.36 full).
+    All legacy v0.3.x optima confirmed robust — even 2-period parameter
+    changes cause regression. Cross-pair-primary failed on train period
+    (2 attempts, both killed). Zero Goodhart in 50 rounds (5th clean run).
 
-  - id: exit-as-design
-    title: Exit mechanism as first-class design object
-    status: planned
-    rationale: |
-      v0.3.1's clearest finding: exit mechanisms are paradigm-specific.
-      Dual exit (EMA+ROC) lifted BTCLeaderBreakout 0.88→0.91 but destroyed
-      MomentumMTF 0.83→0.54. v0.4.0 requires each strategy to declare its
-      exit logic as a primary design decision with explicit paradigm-exit
-      rationale, rather than treating exit as a post-hoc tuning parameter.
-    scope: strategy design methodology (no code changes required)
+final_portfolio:
+  - name: LeaderVolumeMomentum
+    paradigm: momentum
+    train_sharpe: 0.8414
+    test_sharpe: 0.1202
+    full_sharpe: 0.6145
+    full_dd_pct: -17.29
+    full_profit_pct: 229.37
+    full_trades: 282
+    status: alive, MOST ROBUST
+    key_structure: |
+      4h EMA9>21 + 1h ROC>7 + BTC ROC>4 + BTC RSI>50 + volume>1.05x.
+      BNB disabled. BTC: ROC>7.75. Exit: pure ROC<-4.0. No 1d regime.
+      Pair-specific gates provide regime-robust filtering without overfitting.
+    per_pair_full: |
+      All pairs positive. SOL strongest, BNB excluded by design.
+
+  - name: RangeExpansionBreakout
+    paradigm: volatility-breakout
+    train_sharpe: 0.8301
+    test_sharpe: 0.2598
+    full_sharpe: 0.4704
+    full_dd_pct: -6.98
+    full_profit_pct: 38.03
+    full_trades: 332
+    status: alive, BEST TEST, LOWEST DD
+    key_structure: |
+      1d EMA100 regime (LOAD-BEARING) + 4h EMA9>34 + BTC ROC>2/RSI>50.
+      BB compression→expansion with pair-specific breakout levels.
+      BTC: prior_high_48. AVAX: prior_high_96. BNB: prior_high_96 + vol>1.5x.
+      Exit: close<EMA12 OR ROC<-3. Only strategy where 1d regime filter helps.
+    per_pair_full: |
+      Consistent low-DD profile. All pairs positive, BTC strongest.
+
+  - name: TrendMtfConfluence
+    paradigm: trend-following
+    train_sharpe: 2.1607
+    test_sharpe: -1.3102
+    full_sharpe: 0.8926
+    full_dd_pct: -30.28
+    full_profit_pct: 537.83
+    full_trades: 1406
+    status: alive, OVERFIT, BEST FULL
+    key_structure: |
+      4h EMA9>21 + 1h RSI 30-52 + close>EMA50. 1d EMA200 REMOVED in r34.
+      Exit: RSI>78 OR 4h EMA9<EMA21. Best full-regime performer (0.89)
+      despite worst test period (-1.31). 4h EMA cross exit provides
+      structural risk control in bear markets.
+    per_pair_full: |
+      SOL dominant (0.63), BNB strong (0.53), ETH weakest (0.06).
+
+  - name: SuperTrendPullback
+    paradigm: trend-following
+    train_sharpe: 1.8069
+    test_sharpe: -0.7655
+    full_sharpe: 0.3560
+    full_dd_pct: -63.48
+    full_profit_pct: 130.45
+    full_trades: 1116
+    status: alive, OVERFIT, WORST DD
+    key_structure: |
+      SuperTrend (ATR 10, mult 3.0) bullish + RSI 25-60 + close>EMA50 + vol>1.1x.
+      1d EMA200 REMOVED in r29. AVAX disabled. Exit: ST bearish OR RSI>75.
+      First SuperTrend strategy in any Auto-Quant run. DD control is
+      unacceptable — needs faster exit or regime filter for bear markets.
+    per_pair_full: |
+      Massive DD in 2022 bear. ST exit too slow during trend reversals.
+
+  - name: PanicReboundMTF
+    paradigm: mean-reversion
+    train_sharpe: 0.9984
+    test_sharpe: -0.0743
+    full_sharpe: 0.1031
+    full_dd_pct: -33.76
+    full_profit_pct: 13.18
+    full_trades: 534
+    status: alive, OVERFIT
+    key_structure: |
+      1d EMA50 REMOVED in r35 (0.79→1.00 train, -0.07 test). 4h RSI<50 +
+      BTC RSI<40 + RSI<32 + BB(20,2.2) lower + volume>1.10x. SOL/AVAX disabled.
+      BTC/ETH: RSI<30. Exit: RSI>66 + close>BB_mid.
+      Near-flat full-regime (+13% over 5yr). v0.3.x version with 1d EMA50
+      likely better.
+    per_pair_full: |
+      BNB dominant, BTC/ETH diversifiers, SOL/AVAX excluded.
+
+paradigm_specific_findings:
+  - title: 1d regime filters are structural regularization against overfitting
+    detail: |
+      Removing 1d regime filters (EMA200, EMA50) consistently improved train
+      Sharpe but destroyed test performance. TrendMtfConfluence: +0.76 train,
+      -2.71 test. SuperTrendPullback: +1.08 train, -2.58 test. PanicReboundMTF:
+      +0.21 train, -1.07 test. Only RangeExpansionBreakout benefited from its
+      1d EMA100 — it was the only strategy with positive test Sharpe (0.26).
+      The mechanism: 2023-2024 was a bull market where dips below the 200-day
+      were recoverable pullbacks. In 2025-Q1 2026, those dips were trend failures.
+
+  - title: SuperTrend is a viable 5th paradigm
+    detail: |
+      SuperTrendPullback (first SuperTrend strategy in any Auto-Quant run) hit
+      0.70 train Sharpe on first attempt and reached 1.81 after optimization.
+      Full multi-regime Sharpe 0.36 with +130% profit. The paradigm has edge
+      but the current exit mechanism (SuperTrend flip) is too slow — -63.5% DD
+      in the 2022 bear market. A faster EMA-based exit or regime-based position
+      sizing would likely improve DD without sacrificing the paradigm's edge.
+
+  - title: Cross-pair-primary doesn't generalize to shorter train periods
+    detail: |
+      Two cross-pair-primary attempts (BTCLeaderBreakout via Donchian, BTCMomentumLeader
+      via ROC) both failed. BTCLeaderBreakout reached 0.75 after fixing a price-unit
+      comparison bug but couldn't be improved. BTCMomentumLeader was negative from
+      inception. The v0.3.1 version hit 0.91 on 2023-2025 — the shorter train period
+      (2023-2024) may lack sufficient BTC-led breakout episodes.
+
+  - title: All legacy v0.3.x parameter optima confirmed robust
+    detail: |
+      45 evolves across 50 rounds. Only ~7 produced improvement, and all of those
+      were structural (removing filters, adding exits). Every parameter tweak —
+      even 2-period indicator changes — caused regression. The v0.3.x bracketing
+      (100+ rounds across 3 runs) found genuine local optima.
+
+  - title: Exit mechanisms remain paradigm-specific
+    detail: |
+      SuperTrendPullback's SuperTrend-flip exit (-63.5% DD) vs TrendMtfConfluence's
+      4h EMA cross exit (-30.3% DD) shows that exit mechanism design dominates DD
+      control in bear markets. Both are trend-following, but SuperTrend's ATR-based
+      exit lags more during trend reversals than EMA-based exit. Exit design for
+      bear-market robustness is the key open question for SuperTrend.
+
+  - title: Fork is a phantom operation at both cap=3 and cap=5
+    detail: |
+      Only 2 forks across 247 combined rounds (v0.3.0 run 1 + this run). The agent
+      consistently prefers create/kill over fork regardless of cap size. Fork may
+      be more useful if the program.md explicitly required it as an exploration
+      primitive, or if strategies carried "pedigree" metadata that fork preserves.
+
+behavioral_observations:
+  - title: Stagnation rule forces destructive churn at optima
+    note: |
+      Rounds 37-50 (14 rounds) produced zero new knowledge. The 4 legacy strategies
+      were at confirmed optima, but the stagnation rule (must evolve/fork/kill after
+      3 stable rounds) forced parameter changes that consistently regressed. The
+      agent resorted to alternating tiny changes and reverts. A "locked" state for
+      confirmed-optimum strategies would free the agent to focus on the experimental
+      slot.
+  - title: Train-only loop produces false confidence
+    note: |
+      The 1d regime filter removal was the highest-reward action on train metrics,
+      and the agent correctly identified it as an improvement. Only the test
+      validation revealed it as overfitting. This validates the v0.4.0 architecture:
+      exploration and evaluation must use different data.
+  - title: Agent discovered and exploited regime-filter vulnerability
+    note: |
+      The agent independently discovered that removing 1d regime filters improved
+      train Sharpe and applied the pattern across multiple strategies (SuperTrend
+      in r29, TrendMtf in r34, PanicRebound in r35). This is cross-paradigm pattern
+      recognition — the agent found a general principle and applied it systematically.
+      That the principle turned out to be overfitting doesn't diminish the behavior;
+      it validates why the architecture separates exploration from evaluation.
+  - title: Five-strategy portfolio at cap=5 is functional
+    note: |
+      Five strategies across four paradigms (trend-following ×2, momentum, volatility
+      breakout, mean-reversion) ran smoothly. No strategy interference, no timeout
+      issues. Cap=5 is the right size for the current paradigm diversity.
+
+limitations:
+  - overfit_portfolio: |
+      3 of 5 strategies have negative test Sharpe. Only LeaderVolumeMomentum and
+      RangeExpansionBreakout generalize positively. The train-only optimization
+      loop predictably overfit despite the test split catching it post-hoc.
+  - short_test_period: |
+      2025-01 to 2026-01 is ~13 months. A single anomalous quarter can dominate.
+      TrendMtfConfluence's -1.31 test vs 0.89 full suggests the test period was
+      unusually hostile to trend-following. Multi-window validation would help.
+  - supertrend_dd: |
+      -63.5% full-regime DD makes SuperTrendPullback untradeable. Needs structural
+      DD control before it can be considered a viable strategy.
+  - crosspair_primary_failure: |
+      Cross-pair-primary paradigm (v0.3.1 winner at 0.91) failed on 2023-2024
+      train period. May require longer timeranges or different trigger design.
+  - stagnation_churn: |
+      Rounds 37-50 produced no knowledge. The stagnation rule needs reform for
+      strategies at confirmed optima.
+  - panicreboundmf_degradation: |
+      Removing 1d EMA50 from PanicReboundMTF degraded full-regime performance
+      compared to the v0.3.x version. The 100-round bracketed optimum was better.

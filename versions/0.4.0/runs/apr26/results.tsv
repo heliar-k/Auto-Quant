@@ -1,0 +1,104 @@
+commit	event	strategy_name	sharpe	max_dd	note
+f745382	create	BTCLeaderBreakout	0.2821	-1.80	All 50 trades on BTC only — cross-pair trigger bug: comparing altcoin close to BTC Donchian high in different price units. Must fix.
+f745382	create	LeaderVolumeMomentum	0.8414	-5.55	Strong start. SOL(0.33)/AVAX(0.24) carry book. BNB disabled. BTC/ETH moderate. Pure ROC exit aligned with momentum paradigm.
+f745382	create	PanicReboundMTF	0.7867	-5.08	Solid MR anchor. BNB dominant (0.55 Sharpe, 77% WR). SOL/AVAX disabled by design. RSI+BB_mid exit aligned.
+f745382	create	RangeExpansionBreakout	0.7260	-3.55	Decent vol breakout. Works on 4 pairs (BNB disabled). Low per-pair Sharpes. Fast multi-condition exit reasonable for vol paradigm.
+f745382	create	TrendMtfConfluence	-0.0279	-9.74	Negative on 4/5 pairs. RSI 35-48 pullback too narrow or 4h trend filter failing. Needs structural fix.
+9c909d4	evolve	BTCLeaderBreakout	0.7501	-9.27	Fix confirmed: BTC 4h close>DC high instead of local close. 258 trades across all 5 pairs. BNB slightly negative (-0.04). All others positive.
+9c909d4	stable	LeaderVolumeMomentum	0.8414	-5.55	Untouched. 85 trades sparse — BTC only 10 trades. BTC RSI>50 may be blocking.
+9c909d4	stable	PanicReboundMTF	0.7867	-5.08	Untouched. At known v0.3.x optimum.
+9c909d4	stable	RangeExpansionBreakout	0.7260	-3.55	Untouched. BNB disabled, works on 4 pairs.
+9c909d4	evolve	TrendMtfConfluence	1.4011	-8.99	RSI 30-52 + no ROC>0 unlocked trend pullbacks. 388 trades, all 5 pairs positive. SOL dominant (0.46). No Goodhart signals: no profit_only, no ROI clipping, PF 1.53 legit.
+de406b9	evolve	LeaderVolumeMomentum	0.6072	-7.83	REGRESSION: base ROC 5.0 + exit -3.0 destroyed performance (0.84→0.61). Lower ROC let in weak signals, faster exit clipped winners.
+de406b9	stable	BTCLeaderBreakout	0.7501	-9.27	Untouched.
+de406b9	stable	PanicReboundMTF	0.7867	-5.08	Untouched.
+de406b9	stable	RangeExpansionBreakout	0.7260	-3.55	Untouched.
+de406b9	stable	TrendMtfConfluence	1.4011	-8.99	Untouched.
+ab39747	evolve	LeaderVolumeMomentum	0.6127	-8.28	Still regressed. Pair-specific gates + volume bump hurt. Reverting fully next round.
+ab39747	stable	BTCLeaderBreakout	0.7501	-9.27	Untouched.
+ab39747	stable	PanicReboundMTF	0.7867	-5.08	Untouched.
+ab39747	stable	RangeExpansionBreakout	0.7260	-3.55	Untouched.
+ab39747	stable	TrendMtfConfluence	1.4011	-8.99	Untouched.
+388b4c8	stable	BTCLeaderBreakout	0.7501	-9.27	3rd consecutive stable — stagnation gate triggered.
+388b4c8	stable	LeaderVolumeMomentum	0.8414	-5.55	Fully reverted to original. Back at 0.84.
+388b4c8	stable	PanicReboundMTF	0.7867	-5.08	4th consecutive stable — stagnation gate triggered.
+388b4c8	evolve	RangeExpansionBreakout	0.8301	-3.55	Enable BNB (prior_high_96 + vol>1.5x) + remove RSI>82 exit. Sharpe +0.10, trades +50. BNB now trading.
+388b4c8	stable	TrendMtfConfluence	1.4011	-8.99	3rd consecutive stable — stagnation gate triggered.
+ab04e8e	evolve	BTCLeaderBreakout	0.6581	-6.10	REGRESSION: disable BNB + ROC exit -1.5 both hurt (0.75→0.66). BNB diversification mattered. Reverted.
+ab04e8e	stable	LeaderVolumeMomentum	0.8414	-5.55	Untouched.
+ab04e8e	evolve	PanicReboundMTF	0.7038	-4.65	REGRESSION: 4h RSI<50→45 too tight (0.79→0.70). Reverted.
+ab04e8e	stable	RangeExpansionBreakout	0.8301	-3.55	Untouched.
+ab04e8e	evolve	TrendMtfConfluence	1.2765	-8.35	REGRESSION: RSI exit 78→80 let winners run too long (1.40→1.28). Reverted.
+284e85f	evolve	BTCLeaderBreakout	0.4666	-4.67	REGRESSION: 1d EMA200 filter cut trades 258→165, killed performance. Reverted.
+284e85f	stable	LeaderVolumeMomentum	0.8414	-5.55	Untouched.
+284e85f	evolve	PanicReboundMTF	0.6782	-6.35	REGRESSION: earlier exit RSI 66→64 hurts (0.79→0.68). Reverted.
+284e85f	stable	RangeExpansionBreakout	0.8301	-3.55	Untouched.
+284e85f	evolve	TrendMtfConfluence	1.1224	-17.57	REGRESSION: removing 4h EMA cross exit destroyed risk control (1.40→1.12, DD doubled). Reverted.
+ddd8b7b	kill	BTCLeaderBreakout	-	-	Killed after 3 failed evolves. Weakest performer (0.75), resistant to improvement.
+ddd8b7b	fork	TrendMtfConfluence→BTCTrendConfirm	0.3309	-7.72	BTC ROC>2.0 filter crushed entries (388→112). Cross-pair confirmation too restrictive for trend-following.
+ddd8b7b	stable	LeaderVolumeMomentum	0.8414	-5.55	Untouched.
+ddd8b7b	stable	PanicReboundMTF	0.7867	-5.08	Untouched.
+ddd8b7b	stable	RangeExpansionBreakout	0.8301	-3.55	Untouched.
+ddd8b7b	stable	TrendMtfConfluence	1.4011	-8.99	Untouched.
+5799a6f	kill	BTCTrendConfirm	-	-	Killed at 0.33. BTC ROC filter destroyed parent's edge. Replaced with KeltnerBreakout.
+5799a6f	create	KeltnerBreakout	0.4127	-8.25	New paradigm: Keltner Channel breakout. 389 trades, low quality. Needs tighter conditions.
+5799a6f	stable	LeaderVolumeMomentum	0.8414	-5.55	Untouched.
+5799a6f	stable	PanicReboundMTF	0.7867	-5.08	Untouched.
+5799a6f	stable	RangeExpansionBreakout	0.8301	-3.55	Untouched.
+5799a6f	stable	TrendMtfConfluence	1.4011	-8.99	Untouched.
+60e3488	evolve	KeltnerBreakout	0.4703	-4.58	Tighter KC 2.5 + ROC>4 + vol>1.5: trades 389→180, DD improved. Still sub-0.50.
+60e3488	evolve	LeaderVolumeMomentum	0.8414	-5.55	Removed BTC RSI>50 filter — NEUTRAL (no effect). Filter was dead code.
+60e3488	evolve	PanicReboundMTF	0.7867	-5.08	Removed BTC ROC<1.5 filter — NEUTRAL (no effect). Filter was dead code.
+60e3488	evolve	RangeExpansionBreakout	0.8301	-3.55	Removed BTC RSI>50 filter — NEUTRAL (no effect). Filter was dead code.
+60e3488	evolve	TrendMtfConfluence	1.1341	-7.55	REGRESSION: pair-specific RSI ranges (ETH 42, AVAX 45) hurt (1.40→1.13). Reverted.
+a143ffe	evolve	KeltnerBreakout	0.5606	-3.84	Faster EMA12 exit (was EMA20): +0.09. DD tightened. Trending up.
+a143ffe	stable	LeaderVolumeMomentum	0.8414	-5.55	Untouched.
+a143ffe	stable	PanicReboundMTF	0.7867	-5.08	Untouched.
+a143ffe	stable	RangeExpansionBreakout	0.8301	-3.55	Untouched.
+a143ffe	stable	TrendMtfConfluence	1.4011	-8.99	Reverted to round 5 best.
+ef1ec53	evolve	KeltnerBreakout	-0.2437	-1.94	COLLAPSED: EMA50 + RSI<70 filters too restrictive (4 trades). Killed next round.
+ef1ec53	stable	LeaderVolumeMomentum	0.8414	-5.55	Untouched.
+ef1ec53	stable	PanicReboundMTF	0.7867	-5.08	Untouched.
+ef1ec53	stable	RangeExpansionBreakout	0.8301	-3.55	Untouched.
+ef1ec53	stable	TrendMtfConfluence	1.4011	-8.99	Untouched.
+9761eed	create	BTCMomentumLeader	-0.1854	-12.34	BTC 4h ROC>3.0 trigger generates noise (288 trades). Cross-pair-primary with momentum trigger fails.
+9761eed	stable	LeaderVolumeMomentum	0.8414	-5.55	Untouched.
+9761eed	stable	PanicReboundMTF	0.7867	-5.08	Untouched.
+9761eed	stable	RangeExpansionBreakout	0.8301	-3.55	Untouched.
+9761eed	stable	TrendMtfConfluence	1.4011	-8.99	Untouched.
+fb91cfb	evolve	BTCMomentumLeader	-0.0739	-7.80	Tighten BTC ROC 3→5, add local ROC>3, vol 1.3→1.5. Trades 288→96, still negative.
+fb91cfb	stable	LeaderVolumeMomentum	0.8414	-5.55	Untouched.
+fb91cfb	stable	PanicReboundMTF	0.7867	-5.08	Untouched.
+fb91cfb	stable	RangeExpansionBreakout	0.8301	-3.55	Untouched.
+fb91cfb	stable	TrendMtfConfluence	1.4011	-8.99	Untouched.
+a91a507	evolve	BTCMomentumLeader	-0.0578	-6.66	Disable BNB + faster exit (ROC -1.5). Still negative after 3 evolves. Kill next round.
+a91a507	stable	LeaderVolumeMomentum	0.8414	-5.55	Untouched.
+a91a507	stable	PanicReboundMTF	0.7867	-5.08	Untouched.
+a91a507	stable	RangeExpansionBreakout	0.8301	-3.55	Untouched.
+a91a507	stable	TrendMtfConfluence	1.4011	-8.99	Untouched.
+1d43a28	kill	BTCMomentumLeader	-	-	Killed after 3 failed evolves. Cross-pair-primary with ROC trigger doesn't work on train period.
+1d43a28	create	SuperTrendPullback	0.7034	-18.21	First attempt! SuperTrend + RSI pullback entries. Good Sharpe but DD too high. Needs 4h trend filter.
+1d43a28	evolve	LeaderVolumeMomentum	0.5883	-4.32	REGRESSION: BTC ROC 4→5 hurt (0.84→0.59). Reverted.
+1d43a28	evolve	PanicReboundMTF	0.7504	-4.89	REGRESSION: 4h RSI 50→48 slight hurt (0.79→0.75). Reverted.
+1d43a28	evolve	RangeExpansionBreakout	0.7768	-3.55	REGRESSION: compression 0.68→0.65 hurt (0.83→0.78). Reverted.
+1d43a28	evolve	TrendMtfConfluence	1.3946	-10.00	NEAR-FLAT: RSI exit 78→76 (1.40→1.39). Essentially unchanged. Reverted.
+6e3de15	evolve	SuperTrendPullback	0.6425	-16.05	4h trend filter + tighter RSI 32-48 reduced trades 277→220, Sharpe 0.70→0.64. DD still -16%.
+6e3de15	evolve	LeaderVolumeMomentum	0.8414	-5.55	Reverted to round 5 best (BTC ROC back to 4.0).
+6e3de15	evolve	PanicReboundMTF	0.7867	-5.08	Reverted to round 5 best (4h RSI back to 50).
+6e3de15	evolve	RangeExpansionBreakout	0.8301	-3.55	Reverted to round 5 best (compression back to 0.68).
+6e3de15	evolve	TrendMtfConfluence	1.4011	-8.99	Reverted to round 5 best (RSI exit back to 78).
+983b74f	evolve	SuperTrendPullback	-0.1477	-1.94	COLLAPSED: triple exit + sensitive ST too aggressive (11 trades). Reverting to first version.
+983b74f	stable	LeaderVolumeMomentum	0.8414	-5.55	Untouched.
+983b74f	stable	PanicReboundMTF	0.7867	-5.08	Untouched.
+983b74f	stable	RangeExpansionBreakout	0.8301	-3.55	Untouched.
+983b74f	stable	TrendMtfConfluence	1.4011	-8.99	Untouched.
+e777306	evolve	SuperTrendPullback	0.7034	-18.21	Reverted to first version (0.70). Working baseline with DD problem.
+e777306	stable	LeaderVolumeMomentum	0.8414	-5.55	Untouched.
+e777306	stable	PanicReboundMTF	0.7867	-5.08	Untouched.
+e777306	stable	RangeExpansionBreakout	0.8301	-3.55	Untouched.
+e777306	stable	TrendMtfConfluence	1.4011	-8.99	Untouched.
+dbc3795	evolve	SuperTrendPullback	0.7297	-14.32	Disable AVAX: +0.03 Sharpe, DD -18.21→-14.32. AVAX was the DD contributor.
+dbc3795	stable	LeaderVolumeMomentum	0.8414	-5.55	3rd stable — stagnation.
+dbc3795	stable	PanicReboundMTF	0.7867	-5.08	3rd stable — stagnation.
+dbc3795	stable	RangeExpansionBreakout	0.8301	-3.55	3rd stable — stagnation.
+dbc3795	stable	TrendMtfConfluence	1.4011	-8.99	3rd stable — stagnation.
