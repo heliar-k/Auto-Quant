@@ -42,6 +42,7 @@ class TrendMtfRegime(IStrategy):
     def populate_indicators_4h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["ema9"] = ta.EMA(dataframe, timeperiod=9)
         dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
+        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         return dataframe
 
     @informative("1d")
@@ -59,8 +60,10 @@ class TrendMtfRegime(IStrategy):
         entry_condition = (
             (dataframe["close"] > dataframe["ema200_1d"])
             & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
+            & (dataframe["rsi_4h"] > 45)
+            & (dataframe["rsi_4h"] < 65)
             & (dataframe["close"] > dataframe["ema50"])
-            & (dataframe["rsi"] > 32)
+            & (dataframe["rsi"] > 35)
             & (dataframe["rsi"] < 48)
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
         )
