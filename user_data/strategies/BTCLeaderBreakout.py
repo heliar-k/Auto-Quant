@@ -64,7 +64,7 @@ class BTCLeaderBreakout(IStrategy):
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        btc_breakout = dataframe["close"] > dataframe["btc_usdt_dc_high_4h"]
+        btc_breakout = dataframe["btc_usdt_close_4h"] > dataframe["btc_usdt_dc_high_4h"]
         btc_atr_expanding = dataframe["btc_usdt_atr_4h"] > dataframe["btc_usdt_atr_ma_4h"]
         local_trend = (
             (dataframe["close"] > dataframe["ema50"])

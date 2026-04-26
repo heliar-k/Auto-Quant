@@ -63,9 +63,8 @@ class TrendMtfConfluence(IStrategy):
             (dataframe["close"] > dataframe["ema200_1d"])
             & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & (dataframe["close"] > dataframe["ema50"])
-            & (dataframe["rsi"] >= 35)
-            & (dataframe["rsi"] <= 48)
-            & (dataframe["roc"] > 0)
+            & (dataframe["rsi"] >= 30)
+            & (dataframe["rsi"] <= 52)
         )
 
         dataframe.loc[entry_condition, "enter_long"] = 1
