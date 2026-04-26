@@ -11,7 +11,7 @@ Parent: root
 Created: a38cfb7
 Status: active
 Uses MTF: yes (BTC 4h Donchian+ATR, local 4h trend, 1d regime)
-Exit Mechanism: dual exit — close<EMA21 OR ROC<-1.5 (BNB disabled)
+Exit Mechanism: dual exit — close<EMA21 OR ROC<-1.0 (with 1d EMA200 regime filter)
 Exit Rationale: BTC-led breakouts fade predictably when BTC momentum stalls.
 EMA21 catches the trend break; ROC<-1.0 catches momentum failure before the
 EMA signal. Dual exit is load-bearing for cross-pair-primary because the
@@ -48,6 +48,11 @@ class BTCLeaderBreakout(IStrategy):
         dataframe["atr_ma"] = dataframe["atr"].rolling(20).mean()
         return dataframe
 
+    @informative("1d")
+    def populate_indicators_1d(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe["ema200"] = ta.EMA(dataframe, timeperiod=200)
+        return dataframe
+
     @informative("4h")
     def populate_indicators_4h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["ema9"] = ta.EMA(dataframe, timeperiod=9)
@@ -67,7 +72,8 @@ class BTCLeaderBreakout(IStrategy):
         btc_breakout = dataframe["btc_usdt_close_4h"] > dataframe["btc_usdt_dc_high_4h"]
         btc_atr_expanding = dataframe["btc_usdt_atr_4h"] > dataframe["btc_usdt_atr_ma_4h"]
         local_trend = (
-            (dataframe["close"] > dataframe["ema50"])
+            (dataframe["close"] > dataframe["ema200_1d"])
+            & (dataframe["close"] > dataframe["ema50"])
             & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
         )
         volume_ok = dataframe["volume"] > dataframe["vol_ma"] * 1.5
@@ -77,16 +83,13 @@ class BTCLeaderBreakout(IStrategy):
         if metadata.get("pair") == "BTC/USDT":
             entry_condition &= dataframe["atr"] > dataframe["atr_ma"] * 1.2
 
-        if metadata.get("pair") == "BNB/USDT":
-            entry_condition &= False
-
         dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
             (dataframe["close"] < dataframe["ema21"])
-            | (dataframe["roc"] < -1.5),
+            | (dataframe["roc"] < -1.0),
             "exit_long",
         ] = 1
         return dataframe
