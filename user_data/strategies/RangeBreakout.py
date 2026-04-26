@@ -53,6 +53,7 @@ class RangeBreakout(IStrategy):
     def populate_indicators_btc(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["roc"] = ta.ROC(dataframe, timeperiod=20)
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
+        dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
         return dataframe
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
@@ -79,6 +80,7 @@ class RangeBreakout(IStrategy):
             & (dataframe["ema9_4h"] > dataframe["ema34_4h"])
             & (dataframe["btc_usdt_roc_1h"] > 2.0)
             & (dataframe["btc_usdt_rsi_1h"] > 50)
+            & (dataframe["btc_usdt_close_1h"] > dataframe["btc_usdt_ema50_1h"])
             & (dataframe["close"] > breakout_level)
             & (dataframe["rsi"] > 50)
             & (dataframe["rsi"] < 72)
