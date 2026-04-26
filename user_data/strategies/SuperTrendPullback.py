@@ -105,7 +105,7 @@ class SuperTrendPullback(IStrategy):
             & st_bullish
             & st_just_flipped
             & (dataframe["close"] > dataframe["ema50"])
-            & (dataframe["rsi"] > 28)
+            & (dataframe["rsi"] > 32)
             & (dataframe["rsi"] < 70)
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.0)
         )
