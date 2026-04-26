@@ -68,6 +68,9 @@ class SuperTrendPullback(IStrategy):
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.1)
         )
 
+        if metadata.get("pair") == "AVAX/USDT":
+            entry_condition &= False
+
         dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
 
