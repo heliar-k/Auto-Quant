@@ -83,7 +83,7 @@ class RangeBreakout(IStrategy):
             & (dataframe["rsi"] > 50)
             & (dataframe["rsi"] < 72)
             & (dataframe["roc"] > 3.0)
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.3)
+            & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
         )
 
         if metadata.get("pair") == "ETH/USDT":
@@ -101,7 +101,7 @@ class RangeBreakout(IStrategy):
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
             (dataframe["close"] < dataframe["ema12"])
-            | (dataframe["roc"] < -3.0),
+            | (dataframe["roc"] < -2.5),
             "exit_long",
         ] = 1
         return dataframe
