@@ -47,12 +47,12 @@ class LeaderVolumeMomentum(IStrategy):
 
     @informative("1h", "BTC/USDT")
     def populate_indicators_btc(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe["roc"] = ta.ROC(dataframe, timeperiod=20)
+        dataframe["roc"] = ta.ROC(dataframe, timeperiod=21)
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         return dataframe
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe["roc"] = ta.ROC(dataframe, timeperiod=20)
+        dataframe["roc"] = ta.ROC(dataframe, timeperiod=21)
         dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
         dataframe["vol_ma"] = dataframe["volume"].rolling(20).mean()
         return dataframe
