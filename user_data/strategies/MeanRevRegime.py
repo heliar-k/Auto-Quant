@@ -1,16 +1,20 @@
 """
-PanicReboundMTF — MTF panic mean-reversion across the 5-pair universe
+MeanRevRegime — multi-TF mean-reversion with 1d regime filter
 
 Paradigm: mean-reversion
-Hypothesis: Crypto majors revert best after synchronized weakness: a local 1h
-oversold/BB-lower event is higher quality when the traded pair is below-neutral on
-4h RSI, BTC is also materially washed out on 1h, and the pair remains in a constructive 1d
-EMA50 regime. This tests whether v0.3.0's cross-pair + MTF context can separate
-recoverable panic from genuine trend failure.
+Hypothesis: mean-reversion opportunities are more frequent and more reliable during
+bear markets (2022), where panic overshoots create deeper RSI extremes. A 1d EMA50
+regime filter keeps MR trades aligned with the dominant trend direction, while
+multi-TF RSI confluence (1h+4h+BTC) filters for market-wide oversold conditions.
+Volume >1.5x ensures participation in the reversal.
 Parent: root
-Created: e772907
+Created: apr26b-setup
 Status: active
-Uses MTF: yes (1d EMA50, 4h RSI, cross-pair BTC RSI)
+Uses MTF: yes (4h RSI + 1d EMA50 regime + cross-pair BTC RSI)
+Exit Mechanism: RSI>60 AND close>BB_mid (dual: momentum normalized + mean reached)
+Exit Rationale: mean reversion is complete when price returns to the center of its
+recent range AND momentum has normalized. Requiring both prevents exiting during
+dead-cat bounces that don't actually reach the mean
 """
 
 from pandas import DataFrame
@@ -19,12 +23,11 @@ import talib.abstract as ta
 from freqtrade.strategy import IStrategy, informative
 
 
-class PanicReboundMTF(IStrategy):
+class MeanRevRegime(IStrategy):
     INTERFACE_VERSION = 3
 
     timeframe = "1h"
     can_short = False
-
     minimal_roi = {"0": 100}
     stoploss = -0.99
     trailing_stop = False
@@ -34,18 +37,11 @@ class PanicReboundMTF(IStrategy):
     exit_profit_only = False
     ignore_roi_if_entry_signal = False
 
-    startup_candle_count: int = 220
-
-    @informative("1h", "BTC/USDT")
-    def populate_indicators_btc(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
-        dataframe["roc"] = ta.ROC(dataframe, timeperiod=12)
-        return dataframe
+    startup_candle_count: int = 250
 
     @informative("4h")
     def populate_indicators_4h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
-        dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
         return dataframe
 
     @informative("1d")
@@ -53,45 +49,41 @@ class PanicReboundMTF(IStrategy):
         dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
         return dataframe
 
+    @informative("1h", "BTC/USDT")
+    def populate_indicators_btc(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
+        return dataframe
+
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
-        dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
-        bbands = ta.BBANDS(dataframe, timeperiod=20, nbdevup=2.2, nbdevdn=2.2)
+        bbands = ta.BBANDS(dataframe, timeperiod=20, nbdevup=2.0, nbdevdn=2.0)
         dataframe["bb_lower"] = bbands["lowerband"]
         dataframe["bb_mid"] = bbands["middleband"]
-        dataframe["vol_ma"] = dataframe["volume"].rolling(24).mean()
+        dataframe["vol_ma"] = dataframe["volume"].rolling(20).mean()
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         entry_condition = (
             (dataframe["close"] > dataframe["ema50_1d"])
-            & (dataframe["close"] > dataframe["ema50"] * 0.88)
             & (dataframe["rsi_4h"] < 50)
             & (dataframe["btc_usdt_rsi_1h"] < 40)
-            & (dataframe["btc_usdt_roc_1h"] < 1.5)
-            & (dataframe["rsi"] < 32)
+            & (dataframe["rsi"] < 30)
             & (dataframe["close"] < dataframe["bb_lower"])
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.10)
+            & (dataframe["volume"] > dataframe["vol_ma"] * 1.5)
         )
 
-        if metadata.get("pair") == "AVAX/USDT":
+        if metadata.get("pair") in ("SOL/USDT", "AVAX/USDT"):
             entry_condition &= False
 
-        if metadata.get("pair") == "SOL/USDT":
-            entry_condition &= False
-
-        if metadata.get("pair") == "ETH/USDT":
-            entry_condition &= dataframe["rsi"] < 30
-
-        if metadata.get("pair") == "BTC/USDT":
-            entry_condition &= dataframe["rsi"] < 30
+        if metadata.get("pair") in ("BTC/USDT", "ETH/USDT"):
+            entry_condition &= dataframe["rsi"] < 25
 
         dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
-            (dataframe["rsi"] > 66)
+            (dataframe["rsi"] > 60)
             & (dataframe["close"] > dataframe["bb_mid"]),
             "exit_long",
         ] = 1

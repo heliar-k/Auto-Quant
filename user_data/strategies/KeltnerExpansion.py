@@ -1,16 +1,20 @@
 """
-RangeExpansionBreakout — volatility expansion after compressed ranges
+KeltnerExpansion — Keltner Channel compression-expansion volatility breakout
 
 Paradigm: volatility
-Hypothesis: SOL/BNB/AVAX-style crypto trends often begin as range compression followed
-by volume-backed expansion. A breakout above a prior 48h high should work only when
-4h trend is positive, BTC is confirming market-wide risk appetite, 1h Bollinger width
-is expanding from a compressed state, and volume confirms participation. This tests a
-distinct volatility/breakout paradigm instead of another RSI or ROC variant.
+Hypothesis: Keltner Channels (ATR-based) respond faster to volatility regime shifts
+than Bollinger Bands (stddev-based), potentially providing earlier entry signals
+during compression→expansion transitions. This tests a new indicator family against
+the multi-regime 2021-2025 period, including the 2022 bear where volatility patterns
+differ sharply from bull markets.
 Parent: root
-Created: e772907
+Created: apr26b-setup
 Status: active
-Uses MTF: yes (4h EMA trend + 1d EMA regime + cross-pair BTC momentum)
+Uses MTF: yes (4h EMA trend + 1d EMA100 regime + cross-pair BTC)
+Exit Mechanism: close<EMA12 OR ROC<-3 (fast dual exit for volatility dissipation)
+Exit Rationale: volatility expansion breakouts dissipate energy quickly (3-8 candles).
+Fast EMA12 catches trend break, ROC<-3 catches momentum failure. Waiting for slow
+exits would surrender breakout gains
 """
 
 from pandas import DataFrame
@@ -19,7 +23,7 @@ import talib.abstract as ta
 from freqtrade.strategy import IStrategy, informative
 
 
-class RangeExpansionBreakout(IStrategy):
+class KeltnerExpansion(IStrategy):
     INTERFACE_VERSION = 3
 
     timeframe = "1h"
@@ -33,7 +37,7 @@ class RangeExpansionBreakout(IStrategy):
     exit_profit_only = False
     ignore_roi_if_entry_signal = False
 
-    startup_candle_count: int = 240
+    startup_candle_count: int = 260
 
     @informative("4h")
     def populate_indicators_4h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
@@ -54,27 +58,24 @@ class RangeExpansionBreakout(IStrategy):
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["ema12"] = ta.EMA(dataframe, timeperiod=12)
-        dataframe["ema13"] = ta.EMA(dataframe, timeperiod=13)
-        dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
+        dataframe["ema20"] = ta.EMA(dataframe, timeperiod=20)
+        atr = ta.ATR(dataframe, timeperiod=20)
+        dataframe["kc_upper"] = dataframe["ema20"] + 1.5 * atr
+        dataframe["kc_lower"] = dataframe["ema20"] - 1.5 * atr
+        dataframe["kc_width"] = (dataframe["kc_upper"] - dataframe["kc_lower"]) / dataframe["ema20"]
+        dataframe["kc_width_ma"] = dataframe["kc_width"].rolling(96).mean()
+        dataframe["kc_width_min"] = dataframe["kc_width"].rolling(96).min()
         dataframe["roc"] = ta.ROC(dataframe, timeperiod=12)
-        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
-        bbands = ta.BBANDS(dataframe, timeperiod=20, nbdevup=2.0, nbdevdn=2.0)
-        dataframe["bb_upper"] = bbands["upperband"]
-        dataframe["bb_lower"] = bbands["lowerband"]
-        dataframe["bb_mid"] = bbands["middleband"]
-        dataframe["bb_width"] = (dataframe["bb_upper"] - dataframe["bb_lower"]) / dataframe["bb_mid"]
-        dataframe["bb_width_ma"] = dataframe["bb_width"].rolling(96).mean()
-        dataframe["bb_width_min"] = dataframe["bb_width"].rolling(96).min()
         dataframe["prior_high_48"] = dataframe["high"].rolling(48).max().shift(1)
-        dataframe["prior_high"] = dataframe["high"].rolling(72).max().shift(1)
+        dataframe["prior_high_72"] = dataframe["high"].rolling(72).max().shift(1)
         dataframe["prior_high_96"] = dataframe["high"].rolling(96).max().shift(1)
         dataframe["vol_ma"] = dataframe["volume"].rolling(24).mean()
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        was_compressed = dataframe["bb_width_min"] < dataframe["bb_width_ma"] * 0.68
-        is_expanding = dataframe["bb_width"] > dataframe["bb_width_ma"] * 0.92
-        breakout_level = dataframe["prior_high"]
+        was_compressed = dataframe["kc_width_min"] < dataframe["kc_width_ma"] * 0.72
+        is_expanding = dataframe["kc_width"] > dataframe["kc_width_ma"] * 0.85
+        breakout_level = dataframe["prior_high_72"]
 
         if metadata.get("pair") == "AVAX/USDT":
             breakout_level = dataframe["prior_high_96"]
@@ -85,18 +86,21 @@ class RangeExpansionBreakout(IStrategy):
         entry_condition = (
             (dataframe["close"] > dataframe["ema100_1d"])
             & (dataframe["ema9_4h"] > dataframe["ema34_4h"])
-            & (dataframe["btc_usdt_roc_1h"] > 2.0)
-            & (dataframe["btc_usdt_rsi_1h"] > 50)
+            & (dataframe["btc_usdt_roc_1h"] > 1.0)
+            & (dataframe["btc_usdt_rsi_1h"] > 45)
             & was_compressed
             & is_expanding
             & (dataframe["close"] > breakout_level)
-            & (dataframe["close"] > dataframe["bb_upper"])
-            & (dataframe["roc"] > 3.0)
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.15)
+            & (dataframe["close"] > dataframe["kc_upper"])
+            & (dataframe["roc"] > 2.0)
+            & (dataframe["volume"] > dataframe["vol_ma"] * 1.05)
         )
 
         if metadata.get("pair") == "BNB/USDT":
-            entry_condition &= False
+            entry_condition &= (
+                (dataframe["close"] > dataframe["prior_high_96"])
+                & (dataframe["volume"] > dataframe["vol_ma"] * 1.3)
+            )
 
         dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
@@ -104,8 +108,7 @@ class RangeExpansionBreakout(IStrategy):
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
             (dataframe["close"] < dataframe["ema12"])
-            | (dataframe["roc"] < -3.0)
-            | (dataframe["rsi"] > 82),
+            | (dataframe["roc"] < -3.0),
             "exit_long",
         ] = 1
         return dataframe
