@@ -86,7 +86,7 @@ class BTCLeaderBreakout(IStrategy):
             & btc_volume_ok
             & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & (dataframe["close"] > dataframe["ema50"])
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
+            & (dataframe["volume"] > dataframe["vol_ma"] * 1.15)
         )
 
         if metadata.get("pair") == "BTC/USDT":
