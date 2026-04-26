@@ -1,0 +1,218 @@
+version: 0.3.1
+title: Benchmark injection + cross-pair primary signal experiment
+date_started: 2026-04-26
+date_completed: 2026-04-26
+branches:
+  - v0.3.1
+
+intervention:
+  summary: |
+    Two targeted improvements on top of v0.3.0's proven multi-strategy MTF
+    architecture:
+      (1) Benchmark injection: run.py reports buy-and-hold returns per pair
+          and equal-weight portfolio, so every strategy's performance can be
+          contextualized against the passive baseline.
+      (2) Cross-pair primary signal revisit: Run 1's BTCLeaderBreakX (Sharpe
+          ~1.07) used BTC 4h breakout as the PRIMARY entry trigger for all
+          altcoins. Runs 2 and 3 only used BTC as a secondary filter. v0.3.1
+          explicitly explores cross-pair-as-primary as a distinct paradigm.
+  vs_v0_3_0: |
+    v0.3.0 (3 runs, 178 rounds, 540 events) proved that MTF + cross-pair
+    affordances are load-bearing and that asset × paradigm interaction dominates
+    aggregate tuning. Three strategies survived a 100-round pair-specialized
+    search with all Sharpe ≥ 0.53 and all DD ≤ -4.74%.
+
+    Two gaps were identified:
+    1. No benchmark comparison — strategies may be underperforming buy-and-hold
+       on this 2023-2025 bull regime.
+    2. Cross-pair as PRIMARY signal (Run 1's highest-Sharpe approach) was never
+       rediscovered in Runs 2 or 3.
+
+    v0.3.1 closes both gaps. Benchmark injection is permanent infrastructure.
+    BTCLeaderBreakout (0.91 Sharpe) validates cross-pair-primary as a distinct
+    4th paradigm alongside momentum, mean-reversion, and volatility breakout.
+
+asset:
+  pairs: [BTC/USDT, ETH/USDT, SOL/USDT, BNB/USDT, AVAX/USDT]
+  timeframes_base: 1h
+  timeframes_informative: [4h, 1d]
+  timerange: 20230101-20251231
+  exchange: binance
+
+benchmark:
+  equal_weight_profit_pct: 398.44
+  equal_weight_dd_pct: -58.21
+  per_pair:
+    BTC/USDT: { profit_pct: 430.25, dd_pct: -34.76 }
+    ETH/USDT: { profit_pct: 148.86, dd_pct: -65.28 }
+    SOL/USDT: { profit_pct: 1147.75, dd_pct: -66.06 }
+    BNB/USDT: { profit_pct: 251.77, dd_pct: -42.65 }
+    AVAX/USDT: { profit_pct: 13.55, dd_pct: -82.28 }
+
+experiment:
+  branch: v0.3.1
+  rounds: 19
+  total_events: 57
+  peak_sharpe: 0.9103
+  events_by_type:
+    create: 3
+    evolve: 16
+    fork: 0
+    kill: 0
+    stable: 38
+  discarded_evolves: 12
+  kept_evolves: 4
+  key_finding: |
+    Cross-pair primary signal is a viable 4th paradigm (BTCLeaderBreakout 0.91).
+    Exit mechanisms are paradigm-specific: dual exit (EMA+ROC) lifts cross-pair
+    primary but destroys momentum. Pair-specific gates remain highest-leverage
+    tuning dimension. Benchmark injection shows all strategies underperform
+    buy-and-hold on absolute return (+196% vs +398%) but dominate on risk-adjusted
+    basis (max DD -9% vs -58%).
+
+final_portfolio:
+  - name: BTCLeaderBreakout
+    paradigm: cross-pair-primary
+    sharpe: 0.9103
+    max_dd_pct: -8.30
+    profit_pct: 50.15
+    profit_factor: 1.62
+    trades: 335
+    peak_at_commit: fef0daa  # r17, ROC -1.0
+    final_commit: 2f3f989    # r19, confirmed
+    status: alive, LEADER
+    key_structure: |
+      BTC 4h Donchian-10 breakout + ATR expansion → enter all pairs
+      with 1h EMA50 + volume>1.5x. BTC-only ATR>1.2*MA gate. Exit:
+      close<EMA21 OR roc<-1.0. No pair exclusions — BTC/BNB flat
+      trades diversify portfolio.
+    per_pair_summary: |
+      AVAX strongest (0.32 Sharpe), ETH primary beneficiary (0.29),
+      SOL strong (0.17), BTC/BNB diversifiers.
+
+  - name: MomentumMTF
+    paradigm: momentum
+    sharpe: 0.8343
+    max_dd_pct: -8.67
+    profit_pct: 106.64
+    profit_factor: 1.66
+    trades: 259
+    peak_at_commit: bffe14f  # r8, AVAX vol gate
+    final_commit: 2f3f989    # r19, stable
+    status: alive
+    key_structure: |
+      4h EMA9>21 + 1h ROC>5 + volume>1.2x. BNB disabled.
+      ETH: ROC>7 + volume>1.5x. AVAX: ROC>7 + volume>1.5x.
+      Exit: pure ROC<-3 (dual exit destroyed performance).
+    per_pair_summary: |
+      SOL dominant (0.45 Sharpe, 61.6% profit), BTC solid (0.16),
+      AVAX improved by vol gate (0.14), ETH constrained (0.08).
+
+  - name: PanicReboundMTF
+    paradigm: mean-reversion
+    sharpe: 0.6558
+    max_dd_pct: -4.72
+    profit_pct: 39.33
+    profit_factor: 1.94
+    trades: 150
+    peak_at_commit: 1e8c5bb  # Run 3 round 96
+    final_commit: 2f3f989    # r19, stable (unchanged from Run 3)
+    status: alive, anchor
+    key_structure: |
+      Run 3 optimum reconfirmed. 1d EMA50 regime + local EMA50*0.88 +
+      4h RSI<50 + BTC RSI<40/ROC<1.5 + RSI<32 + BB(20,2.2) lower +
+      volume>1.10x. SOL/AVAX disabled. BTC/ETH require RSI<30.
+      Exit: RSI>66 + close>BB_mid.
+    per_pair_summary: |
+      BNB dominant (0.43 Sharpe, 4.47 pf), BTC/ETH positive diversifiers,
+      SOL/AVAX disabled.
+
+paradigm_specific_findings:
+  - title: Exit mechanisms are paradigm-specific
+    detail: |
+      Dual exit (EMA21 + ROC -1.0) lifted BTCLeaderBreakout 0.88→0.91.
+      Same pattern destroyed MomentumMTF 0.83→0.54 when applied in r13.
+      Cross-pair primary benefits from faster exits (catching post-breakout
+      momentum fade); momentum needs slow exits (letting trends run); mean-
+      reversion needs conditional exits (RSI + BB mid). Exit design should
+      be a primary axis of strategy construction, not a post-hoc parameter.
+
+  - title: Pair exclusions are paradigm-specific
+    detail: |
+      Removing BNB from MomentumMTF improved Sharpe 0.55→0.65.
+      Removing BTC or BNB from BTCLeaderBreakout regressed Sharpe (0.85→0.80,
+      0.85→0.79). Flat-return pairs diversify the cross-pair portfolio but
+      drag down momentum. Same pair, opposite treatment depending on paradigm.
+
+  - title: Pair-specific gates are the highest-leverage tuning dimension
+    detail: |
+      The 4 largest single-round improvements were all pair-specific:
+      ETH/AVAX ROC>7 (MomentumMTF +0.14), BTC ATR>1.2*MA (BTCLeaderBreakout
+      +0.03), AVAX vol>1.5x (MomentumMTF +0.04), BNB disabled (MomentumMTF
+      +0.10). Blanket parameter changes (volume, ROC threshold) consistently
+      underperformed pair-specific gates.
+
+  - title: Dual exit works for cross-pair primary, not momentum
+    detail: |
+      BTCLeaderBreakout: adding ROC<-2 to EMA21 exit → Sharpe +0.02, DD -2.6%.
+      MomentumMTF: adding EMA21 to ROC<-3 exit → Sharpe -0.29, profit -67%.
+      The mechanism: cross-pair signals have a predictable post-breakout fade
+      that ROC catches; momentum trends have pullbacks that EMA21 prematurely
+      exits. Paradigm determines exit architecture.
+
+  - title: Run 3 PanicReboundMTF optimum is robust
+    detail: |
+      Tested exit RSI 66→67 (r11, regression) and volume 1.10→1.05 (r15,
+      regression) in independent v0.3.1 context. Both regressed exactly as
+      Run 3 found. The 100-round bracketing was exhaustive.
+
+  - title: Blanket parameter changes underperform pair-specific gates
+    detail: |
+      Generic ROC threshold (5→6) regressed MomentumMTF 0.79→0.66.
+      Generic volume (1.5→1.25 or 1.75) regressed BTCLeaderBreakout.
+      Generic exit changes (EMA13, ROC -4) regressed both strategies.
+      Only pair-specific gates produced consistent improvements.
+
+behavioral_observations:
+  - title: High discard rate from targeted bracketing
+    note: |
+      12 of 16 evolves (75%) were discarded. This is higher than Run 3's
+      70% (70/99) and reflects a different research pattern: once the BTC
+      ATR gate and dual exit were discovered, most remaining rounds focused
+      on parameter bracketing (ROC exit, volume thresholds) where the
+      optimum was already nearby.
+  - title: Benchmark permanently changes strategy evaluation
+    note: |
+      Every round now shows buy-and-hold returns. This provides immediate
+      context: a Sharpe 0.91 strategy with +50% profit is extracting good
+      risk-adjusted returns even though it trails the +398% passive benchmark.
+      Without the benchmark, one might mistakenly think 50% is "strong absolute
+      performance" on a 3-year bull run.
+  - title: Zero forks, zero kills — cap=3 with productive slots
+    note: |
+      Same pattern as Run 2 and Run 3: all 3 paradigms produced positive edge,
+      so no strategy was ever killed. Fork never made sense with all slots
+      productive. This is the 4th consecutive run (apr24b, apr25, v0.3.1) with
+      zero kills.
+  - title: Anchor strategy enables faster convergence
+    note: |
+      Keeping PanicReboundMTF as a proven anchor allowed the experiment to
+      focus on the two new strategies. 19 rounds was sufficient to find
+      stable optima because one slot never needed exploration.
+
+limitations:
+  - single_regime: |
+      2023-2025 bull only. Cross-pair primary signal may fail in bear markets
+      when BTC breakouts are false signals. Momentum may also weaken.
+  - no_out_of_sample: |
+      Entire timerange used for both iteration and evaluation.
+  - crosspair_only_btc: |
+      Only BTC was tested as the cross-pair leader. SOL or ETH might also
+      function as primary signals for subsets of altcoins.
+  - small_round_count: |
+      19 rounds is sufficient for parameter bracketing but insufficient for
+      discovering fundamentally new paradigms or signal types.
+  - panicreboundmf_ceiling: |
+      PanicReboundMTF was at its Run 3 optimum — zero improvement in 19 rounds.
+      This paradigm may have reached the structural ceiling under current
+      affordances.

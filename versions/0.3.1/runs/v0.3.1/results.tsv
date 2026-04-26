@@ -1,0 +1,58 @@
+commit	event	strategy_name	sharpe	max_dd	note
+157fb73	create	BTCLeaderBreakout	0.8489	-8.01	Round 1 root: BTC 4h Donchian-10 breakout as primary trigger for all pairs. Strong aggregate 0.85/51.3% profit, 395 trades. Per-pair: ETH leads (0.30/24.3%), then AVAX (0.27/18.8%), SOL (0.13/7.5%), but BTC itself near-zero (0.01/0.4%) with 94 noisy trades and BNB flat (0.01/0.3%). Cross-pair primary signal works for altcoins but not for BTC itself.
+157fb73	create	MomentumMTF	0.5474	-16.89	Round 1 root: 4h EMA9>21 + 1h ROC>5 + volume>1.2x. Good aggregate 0.55/63.8% profit but DD high at -16.9%. Per-pair: SOL dominant (0.45/56.9%), BTC OK (0.17/17.7%), but ETH flat (0.00/0.6%), AVAX near-zero (0.03/3.0%), BNB deeply negative (-0.14/-14.3%). BNB is the clear problem child — consistent with Run 3 consensus that BNB is bad for directional strategies.
+157fb73	create	PanicReboundMTF	0.6558	-4.72	Round 1: reproduced Run 3 final exactly. Anchor at 0.66/39.3%. BNB dominant (0.43/24.2%), BTC/ETH positive, SOL/AVAX disabled.
+4990921	evolve	BTCLeaderBreakout	0.8020	-8.73	DISCARDED: disabled BTC entries. Sharpe 0.85→0.80 (regression) despite pf 1.50→1.66 and wr 38.7→41.2. BTC zero-profit trades were diversifying portfolio returns; removing them increased aggregate volatility. Rollback.
+4990921	evolve	MomentumMTF	0.6544	-16.84	Disabled BNB entries. Strong improvement: Sharpe 0.55→0.65, profit 63.8→80.4, pf 1.24→1.34. BNB was losing -14.3% in momentum paradigm — consistent with Run 3 consensus. Kept.
+4990921	stable	PanicReboundMTF	0.6558	-4.72	Stable during r2. Anchor profile unchanged.
+d941dce	evolve	BTCLeaderBreakout	0.7858	-6.65	DISCARDED: disabled BNB instead of BTC. Sharpe 0.85→0.79 regression. Both BTC/BNB flat trades diversify cross-pair portfolio volatility. Pair exclusions don't work for this paradigm; rollback to all-pairs.
+d941dce	evolve	MomentumMTF	0.7900	-9.14	ETH/AVAX ROC>7 gates. Breakthrough: Sharpe 0.65→0.79 profit 80.4→100.1 DD -16.8→-9.1 pf 1.34→1.60. ETH profit 0.5→10.3% AVAX 2.8→10.5%. Kept.
+d941dce	stable	PanicReboundMTF	0.6558	-4.72	Stable during r3. Anchor unchanged.
+f7cc77e	evolve	BTCLeaderBreakout	0.7231	-8.10	DISCARDED: EMA13 exit instead of EMA21. Sharpe 0.85→0.72. Faster exit clipped winners across all pairs; profits halved. Rollback to EMA21.
+f7cc77e	evolve	MomentumMTF	0.7019	-11.04	DISCARDED: ROC exit -3→-4. Sharpe 0.79→0.70. AVAX collapsed (10.5→3.9) SOL weakened. Run 3's ROC-4 improvement doesn't transfer to this strategy's structure. Rollback to ROC -3.
+f7cc77e	stable	PanicReboundMTF	0.6558	-4.72	Stable during r4. Anchor unchanged.
+ae23cb9	stable	BTCLeaderBreakout	0.8489	-8.01	Stable. Reverted EMA13→EMA21 after r4 regression. Back to r1 peak.
+ae23cb9	stable	MomentumMTF	0.7900	-9.14	Stable. Reverted ROC -4→-3 after r4 regression. Back to r3 peak.
+ae23cb9	stable	PanicReboundMTF	0.6558	-4.72	Stable during r5 reverts. Anchor unchanged.
+ade7c09	evolve	BTCLeaderBreakout	0.7297	-13.34	DISCARDED: volume 1.5→1.25x. Added 78 noisy trades, Sharpe collapsed 0.85→0.73 DD worsened. Stricter volume 1.5x is essential. Rollback.
+ade7c09	evolve	MomentumMTF	0.5929	-6.22	DISCARDED: added BTC ROC>4 confirmation. Cut trades 266→133, profit 100.1→60.9, Sharpe 0.79→0.59. BTC leader filter too restrictive for this momentum structure. Rollback.
+ade7c09	stable	PanicReboundMTF	0.6558	-4.72	Stable during r6. Anchor unchanged.
+d043231	evolve	BTCLeaderBreakout	0.8777	-9.14	BTC-only ATR>ATR_MA20*1.2 gate. New peak: Sharpe 0.85→0.88 profit 51.3→54.2 pf 1.50→1.65. BTC trades 94→27 quality improved (Sharpe 0.01→0.09 profit 0.5→4.2%). Kept.
+d043231	evolve	MomentumMTF	0.6628	-8.45	DISCARDED: base ROC 5→6. Sharpe 0.79→0.66 SOL/BTC profits declined. ROC 5 with pair-specific gates for weak pairs is better than blanket tightening. Rollback base ROC to 5.
+d043231	stable	PanicReboundMTF	0.6558	-4.72	Stable during r7. Anchor unchanged.
+bffe14f	evolve	BTCLeaderBreakout	0.8414	-8.79	DISCARDED: BNB volume>2.0x. BNB turned negative (pf 0.89) Sharpe 0.88→0.84. Stricter BNB volume filter destroys the diversification value. Rollback.
+bffe14f	evolve	MomentumMTF	0.8347	-8.67	AVAX volume>1.5x gate. New peak: Sharpe 0.79→0.83 profit 100.1→105.8 pf 1.60→1.66. AVAX Sharpe 0.09→0.14 profit 10.5→16.3%. Kept.
+bffe14f	stable	PanicReboundMTF	0.6558	-4.72	Stable during r8. Anchor unchanged.
+f66a124	evolve	BTCLeaderBreakout	0.7872	-9.11	DISCARDED: volume 1.5→1.75x. Sharpe 0.88→0.79 SOL/AVAX/BNB all weakened. Volume 1.5x is the bracketed sweet spot (1.25 too loose r6 0.73, 1.75 too tight r9 0.79). Rollback.
+f66a124	stable	MomentumMTF	0.8347	-8.67	Stable at 0.83 peak during r9. AVAX vol gate and pair-specific ROC gates all confirmed.
+f66a124	stable	PanicReboundMTF	0.6558	-4.72	Stable during r9. Anchor unchanged.
+6864957	evolve	BTCLeaderBreakout	0.7726	-8.16	DISCARDED: Donchian 10→15. Sharpe 0.88→0.77. Longer lookback misses valid breakouts. Rollback to Donchian-10.
+6864957	evolve	MomentumMTF	0.8343	-8.67	ETH vol>1.5x. Essentially neutral: ETH trades 31→30 profit 10.4→10.6 Sharpe flat. Kept as it doesn't hurt and brackets the volume gate.
+6864957	stable	PanicReboundMTF	0.6558	-4.72	Stable during r10. 9th consecutive stable — MUST evolve next round per stagnation gate.
+53948f2	stable	BTCLeaderBreakout	0.8777	-9.14	Stable. Rollback Donchian to 10 — back to r7 peak 0.8777.
+53948f2	stable	MomentumMTF	0.8343	-8.67	Stable at 0.8347 peak during r11.
+53948f2	evolve	PanicReboundMTF	0.6195	-6.09	DISCARDED: exit RSI 66→67. Sharpe 0.66→0.62 BNB weakened. RSI66 is bracketed optimum (Run 3 confirmed, r11 reconfirms). Rollback.
+c0d4b0b	evolve	BTCLeaderBreakout	0.9013	-6.54	Added ROC<-2 secondary exit (close<EMA21 OR roc<-2). New peak: Sharpe 0.88→0.90 DD -9.14→-6.54 Calmar 10.4→13.3. BNB finally slightly positive (0.01→0.03). ROC exit catches post-breakout momentum failure. Kept.
+c0d4b0b	stable	MomentumMTF	0.8343	-8.67	Stable at 0.8347 peak during r12.
+c0d4b0b	stable	PanicReboundMTF	0.6558	-4.72	Stable at 0.66 peak. Rollback exit RSI confirmed.
+3a07469	stable	BTCLeaderBreakout	0.9013	-6.54	Stable at 0.90 peak during r13.
+3a07469	evolve	MomentumMTF	0.5419	-9.93	DISCARDED: added dual exit close<EMA21 OR ROC<-3. Sharpe 0.83→0.54 disaster. EMA21 clips momentum winners early — SOL profit 61.6→11.7%. Dual exit works for cross-pair primary (r12) but destroys momentum. Paradigm-specific exit mechanisms. Rollback to pure ROC<-3.
+3a07469	stable	PanicReboundMTF	0.6558	-4.72	Stable during r13. Anchor unchanged.
+6f09b4d	stable	BTCLeaderBreakout	0.9013	-6.54	Stable at 0.90 peak during r14 rollback.
+6f09b4d	stable	MomentumMTF	0.8343	-8.67	Stable. Rollback dual exit, back to 0.83 peak with pure ROC<-3 exit.
+6f09b4d	stable	PanicReboundMTF	0.6558	-4.72	Stable during r14. 3rd consecutive stable — must evolve next round per stagnation gate.
+dc7cffe	evolve	BTCLeaderBreakout	0.8683	-6.79	DISCARDED: ROC exit -2→-2.5. Sharpe 0.90→0.87. ROC -2 is better than -2.5. Try bracketing other side (-1.5).
+dc7cffe	stable	MomentumMTF	0.8343	-8.67	Stable at 0.83 peak during r15.
+dc7cffe	evolve	PanicReboundMTF	0.6263	-4.72	DISCARDED: volume 1.10→1.05x. Sharpe 0.66→0.63. Volume 1.10x is optimum (Run 3 bracketed). Rollback.
+25f7aeb	evolve	BTCLeaderBreakout	0.9038	-6.39	ROC exit -1.5 bracket. Slight improvement over -2.0: Sharpe 0.9013→0.9038 profit 49.4→50.7. Both -1.5 and -2.0 are near-optimal; keep -1.5 for marginal Sharpe edge.
+25f7aeb	stable	MomentumMTF	0.8343	-8.67	Stable during r16. 3rd consecutive stable — must evolve next round.
+25f7aeb	stable	PanicReboundMTF	0.6558	-4.72	Stable at 0.66 peak. Volume 1.10x rollback confirmed.
+fef0daa	evolve	BTCLeaderBreakout	0.9103	-8.30	ROC exit -1.0 bracket. Sharpe 0.9038→0.9103! Tighter ROC exit catches momentum failure earlier, reducing variance. DD increased -6.39→-8.30 but risk-adjusted return improved. Trend: tighter ROC = higher Sharpe. Try 0.0 next.
+fef0daa	evolve	MomentumMTF	0.8246	-8.67	DISCARDED: added 4h close>EMA50 filter. Sharpe 0.8343→0.8246 minor regression. The 4h EMA9>EMA21 crossover already captures trend; adding close>EMA50 over-constrains. Rollback.
+fef0daa	stable	PanicReboundMTF	0.6558	-4.72	Stable during r17. Anchor unchanged.
+3296c1a	evolve	BTCLeaderBreakout	0.8804	-8.25	DISCARDED: ROC exit 0.0. Sharpe 0.9103→0.8804. Too tight — exits on every minor pullback. Rollback to -1.0.
+3296c1a	stable	MomentumMTF	0.8343	-8.67	Stable at 0.83 peak. 4h EMA50 filter rolled back successfully.
+3296c1a	stable	PanicReboundMTF	0.6558	-4.72	Stable during r18. Anchor unchanged.
+2f3f989	stable	BTCLeaderBreakout	0.9103	-8.30	Stable at 0.9103 peak. ROC -1.0 is bracketed optimum (range: -0.5→-2.5 tested; -2.5=0.87, -2.0=0.90, -1.5=0.90, -1.0=0.91, 0.0=0.88). Tight but not too tight.
+2f3f989	stable	MomentumMTF	0.8343	-8.67	Stable at 0.8343 peak. All pair-specific gates and exit confirmed optimal.
+2f3f989	stable	PanicReboundMTF	0.6558	-4.72	Stable at 0.66 peak. Run 3 optimum reconfirmed.
