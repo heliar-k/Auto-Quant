@@ -1,0 +1,63 @@
+version: 0.3.1
+title: Benchmark injection + cross-pair primary signal experiment
+date_started: 2026-04-26
+date_completed: ~
+branches:
+  - v0.3.1
+
+intervention:
+  summary: |
+    Two targeted improvements on top of v0.3.0's proven multi-strategy MTF
+    architecture:
+      (1) Benchmark injection: run.py reports buy-and-hold returns per pair
+          and equal-weight portfolio, so every strategy's performance can be
+          contextualized against the passive baseline.
+      (2) Cross-pair primary signal revisit: Run 1's BTCLeaderBreakX (Sharpe
+          ~1.07) used BTC 4h breakout as the PRIMARY entry trigger for all
+          altcoins. Runs 2 and 3 only used BTC as a secondary filter. v0.3.1
+          explicitly explores cross-pair-as-primary as a distinct paradigm.
+  vs_v0_3_0: |
+    v0.3.0 (3 runs, 178 rounds, 540 events) proved that MTF + cross-pair
+    affordances are load-bearing and that asset × paradigm interaction dominates
+    aggregate tuning. Three strategies survived a 100-round pair-specialized
+    search with all Sharpe ≥ 0.53 and all DD ≤ -4.74%.
+
+    Two gaps were identified:
+    1. No benchmark comparison — strategies may be underperforming buy-and-hold
+       on this 2023-2025 bull regime.
+    2. Cross-pair as PRIMARY signal (Run 1's highest-Sharpe approach) was never
+       rediscovered in Runs 2 or 3.
+
+    v0.3.1 closes both gaps without structural changes to the experiment loop.
+
+asset:
+  pairs: [BTC/USDT, ETH/USDT, SOL/USDT, BNB/USDT, AVAX/USDT]
+  timeframes_base: 1h
+  timeframes_informative: [4h, 1d]
+  timerange: 20230101-20251231
+  exchange: binance
+
+planned_improvements:
+  - id: benchmark-injection
+    title: Add buy-and-hold benchmark to run.py output
+    status: planned
+    rationale: |
+      v0.3.0's retrospective repeatedly notes the absence of passive benchmarks.
+      Without knowing what buy-and-hold returned on the same timerange, Sharpe
+      0.66 could mean "extracted 66% of the risk premium" or "underperformed
+      cash by half." A 30-line addition to run.py that computes per-pair and
+      equal-weight BaH returns closes this permanently.
+    scope: run.py only (adds a benchmark summary block after strategy blocks)
+
+  - id: crosspair-primary
+    title: Revisit cross-pair-as-primary-signal paradigm
+    status: planned
+    rationale: |
+      Run 1's BTCLeaderBreakX achieved the highest Sharpe in all of v0.3.0
+      (~1.07) by using BTC 4h Donchian breakout as the PRIMARY entry trigger
+      for all pairs. Runs 2 and 3 never revisited this paradigm — BTC was
+      only used as a secondary filter (btc_rsi > 50, btc_roc > 4.0, etc.).
+
+      v0.3.1 starts a new experiment with at least one strategy where BTC's
+      signal is the primary entry gate, not a secondary confirmation.
+    scope: new strategy file(s) under user_data/strategies/

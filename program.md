@@ -1,4 +1,35 @@
-# Auto-Quant v0.3.0 — multi-strategy + multi-timeframe + multi-asset portfolio
+# Auto-Quant v0.3.1 — benchmark injection + cross-pair primary signal
+
+This is v0.3.0's foundation plus two targeted improvements driven by the
+[apr25 retrospective](versions/0.3.0/runs/apr25/retrospective.md).
+
+## What's new in v0.3.1
+
+### 1. Benchmark injection (run.py)
+
+Every backtest run now prints a benchmark block showing per-pair buy-and-hold
+returns and equal-weight portfolio performance over the same timerange. This
+answers the question that haunted all of v0.3.0: "is this strategy beating the
+passive baseline?"
+
+The benchmark is computed by `run.py` — it does not change strategy logic,
+pair universe, timerange, or oracle files. It is a pure informational addition.
+
+### 2. Cross-pair primary signal experiment
+
+Run 1's BTCLeaderBreakX (Sharpe ~1.07) used BTC 4h breakout as the **primary**
+entry trigger for all altcoins. Runs 2 and 3 only used BTC as a secondary
+filter (e.g., `btc_rsi > 50`, `btc_roc > 4.0`) — cross-pair-as-primary was
+never rediscovered.
+
+v0.3.1 explicitly revisits this paradigm: at least one strategy must use a
+cross-pair signal as the primary entry gate, not just a confirmation filter.
+This is a distinct fourth paradigm alongside momentum, mean-reversion, and
+volatility breakout.
+
+---
+
+## Foundation (v0.3.0)
 
 This is an experiment to have the LLM do its own quantitative research across
 **multiple parallel strategies** that can combine signals across **multiple
