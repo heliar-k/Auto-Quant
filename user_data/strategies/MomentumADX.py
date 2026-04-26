@@ -73,7 +73,7 @@ class MomentumADX(IStrategy):
             & (dataframe["plus_di"] > dataframe["minus_di"])
             & (dataframe["close"] > dataframe["ema50"])
             & (dataframe["roc"] > 4.0)
-            & (dataframe["btc_usdt_roc_1h"] > 3.0)
+            & (dataframe["btc_usdt_roc_1h"] > 4.0)
             & (dataframe["btc_usdt_rsi_1h"] > 50)
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
         )
