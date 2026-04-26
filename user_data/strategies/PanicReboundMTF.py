@@ -91,7 +91,7 @@ class PanicReboundMTF(IStrategy):
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
-            (dataframe["rsi"] > 66)
+            (dataframe["rsi"] > 67)
             & (dataframe["close"] > dataframe["bb_mid"]),
             "exit_long",
         ] = 1
