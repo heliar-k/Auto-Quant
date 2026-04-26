@@ -60,8 +60,7 @@ class SuperTrendPullback(IStrategy):
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         entry_condition = (
-            (dataframe["close"] > dataframe["ema50_1d"])
-            & dataframe["st_bullish"]
+            dataframe["st_bullish"]
             & (dataframe["close"] > dataframe["ema50"])
             & (dataframe["rsi"] >= 25)
             & (dataframe["rsi"] <= 60)
@@ -83,7 +82,7 @@ class SuperTrendPullback(IStrategy):
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
             ~dataframe["st_bullish"]
-            | (dataframe["rsi"] > 75),
+            | (dataframe["rsi"] > 72),
             "exit_long",
         ] = 1
         return dataframe
