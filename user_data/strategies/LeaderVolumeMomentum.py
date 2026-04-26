@@ -63,26 +63,15 @@ class LeaderVolumeMomentum(IStrategy):
             & (dataframe["close"] > dataframe["ema50"])
             & (dataframe["roc"] > 7.0)
             & (dataframe["btc_usdt_roc_1h"] > 4.0)
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
+            & (dataframe["btc_usdt_rsi_1h"] > 50)
+            & (dataframe["volume"] > dataframe["vol_ma"] * 1.05)
         )
 
         if metadata.get("pair") == "BNB/USDT":
             entry_condition &= False
 
         if metadata.get("pair") == "BTC/USDT":
-            entry_condition &= dataframe["roc"] > 7.0
-
-        if metadata.get("pair") == "ETH/USDT":
-            entry_condition &= (
-                (dataframe["roc"] > 7.0)
-                & (dataframe["volume"] > dataframe["vol_ma"] * 1.5)
-            )
-
-        if metadata.get("pair") == "AVAX/USDT":
-            entry_condition &= (
-                (dataframe["roc"] > 7.0)
-                & (dataframe["volume"] > dataframe["vol_ma"] * 1.5)
-            )
+            entry_condition &= dataframe["roc"] > 7.75
 
         dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe

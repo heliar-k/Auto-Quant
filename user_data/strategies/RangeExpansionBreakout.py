@@ -11,7 +11,7 @@ Parent: root
 Created: e772907
 Status: active
 Uses MTF: yes (4h EMA trend + 1d EMA regime + cross-pair BTC momentum)
-Exit Mechanism: fast multi-condition (close<EMA12 OR ROC<-3 OR RSI>82)
+Exit Mechanism: fast dual-condition (close<EMA12 OR ROC<-3)
 Exit Rationale: breakout energy dissipates quickly; three independent failure
 detectors (trend break, momentum fade, overbought exhaustion) each capture a
 different failure mode — waiting for a single slow exit would surrender the
@@ -101,7 +101,10 @@ class RangeExpansionBreakout(IStrategy):
         )
 
         if metadata.get("pair") == "BNB/USDT":
-            entry_condition &= False
+            entry_condition &= (
+                (dataframe["close"] > dataframe["prior_high_96"])
+                & (dataframe["volume"] > dataframe["vol_ma"] * 1.5)
+            )
 
         dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
@@ -109,8 +112,7 @@ class RangeExpansionBreakout(IStrategy):
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
             (dataframe["close"] < dataframe["ema12"])
-            | (dataframe["roc"] < -3.0)
-            | (dataframe["rsi"] > 82),
+            | (dataframe["roc"] < -3.0),
             "exit_long",
         ] = 1
         return dataframe
