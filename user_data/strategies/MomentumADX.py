@@ -69,7 +69,7 @@ class MomentumADX(IStrategy):
         entry_condition = (
             (dataframe["close"] > dataframe["ema200_1d"])
             & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
-            & (dataframe["adx"] > 20)
+            & (dataframe["adx"] > 22)
             & (dataframe["plus_di"] > dataframe["minus_di"])
             & (dataframe["close"] > dataframe["ema50"])
             & (dataframe["roc"] > 4.0)
