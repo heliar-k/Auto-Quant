@@ -1,20 +1,19 @@
 """
-KeltnerExpansion — Keltner Channel compression-expansion volatility breakout
+RangeBreakout — pure price-structure breakout above prior range highs
 
-Paradigm: volatility
-Hypothesis: Keltner Channels (ATR-based) respond faster to volatility regime shifts
-than Bollinger Bands (stddev-based), potentially providing earlier entry signals
-during compression→expansion transitions. This tests a new indicator family against
-the multi-regime 2021-2025 period, including the 2022 bear where volatility patterns
-differ sharply from bull markets.
+Paradigm: breakout
+Hypothesis: clean breakouts above prior N-bar highs with volume confirmation and
+4h trend alignment capture the initial thrust of new trends without the complexity
+of compression-expansion detection. This is simpler and more robust than Keltner
+or BB-based approaches, especially across regimes. Pair-specific breakout windows
+account for different volatility profiles.
 Parent: root
-Created: apr26b-setup
+Created: apr26b-r8
 Status: active
 Uses MTF: yes (4h EMA trend + 1d EMA100 regime + cross-pair BTC)
-Exit Mechanism: close<EMA12 OR ROC<-3 (fast dual exit for volatility dissipation)
-Exit Rationale: volatility expansion breakouts dissipate energy quickly (3-8 candles).
-Fast EMA12 catches trend break, ROC<-3 catches momentum failure. Waiting for slow
-exits would surrender breakout gains
+Exit Mechanism: close<EMA12 OR ROC<-3 (fast exit for breakout dissipation)
+Exit Rationale: breakout energy dissipates within 3-8 candles. EMA12 catches
+the trend break, ROC<-3 catches momentum failure. Fast exit is paradigm-appropriate
 """
 
 from pandas import DataFrame
@@ -23,7 +22,7 @@ import talib.abstract as ta
 from freqtrade.strategy import IStrategy, informative
 
 
-class KeltnerExpansion(IStrategy):
+class RangeBreakout(IStrategy):
     INTERFACE_VERSION = 3
 
     timeframe = "1h"
@@ -58,14 +57,8 @@ class KeltnerExpansion(IStrategy):
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["ema12"] = ta.EMA(dataframe, timeperiod=12)
-        dataframe["ema20"] = ta.EMA(dataframe, timeperiod=20)
-        atr = ta.ATR(dataframe, timeperiod=20)
-        dataframe["kc_upper"] = dataframe["ema20"] + 1.5 * atr
-        dataframe["kc_lower"] = dataframe["ema20"] - 1.5 * atr
-        dataframe["kc_width"] = (dataframe["kc_upper"] - dataframe["kc_lower"]) / dataframe["ema20"]
-        dataframe["kc_width_ma"] = dataframe["kc_width"].rolling(96).mean()
-        dataframe["kc_width_min"] = dataframe["kc_width"].rolling(96).min()
         dataframe["roc"] = ta.ROC(dataframe, timeperiod=12)
+        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         dataframe["prior_high_48"] = dataframe["high"].rolling(48).max().shift(1)
         dataframe["prior_high_72"] = dataframe["high"].rolling(72).max().shift(1)
         dataframe["prior_high_96"] = dataframe["high"].rolling(96).max().shift(1)
@@ -73,8 +66,6 @@ class KeltnerExpansion(IStrategy):
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        was_compressed = dataframe["kc_width_min"] < dataframe["kc_width_ma"] * 0.68
-        is_expanding = dataframe["kc_width"] > dataframe["kc_width_ma"] * 0.88
         breakout_level = dataframe["prior_high_72"]
 
         if metadata.get("pair") == "AVAX/USDT":
@@ -88,23 +79,18 @@ class KeltnerExpansion(IStrategy):
             & (dataframe["ema9_4h"] > dataframe["ema34_4h"])
             & (dataframe["btc_usdt_roc_1h"] > 2.0)
             & (dataframe["btc_usdt_rsi_1h"] > 50)
-            & was_compressed
-            & is_expanding
             & (dataframe["close"] > breakout_level)
-            & (dataframe["close"] > dataframe["kc_upper"])
+            & (dataframe["rsi"] > 50)
+            & (dataframe["rsi"] < 72)
             & (dataframe["roc"] > 3.0)
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.10)
+            & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
         )
 
         if metadata.get("pair") == "BNB/USDT":
             entry_condition &= (
                 (dataframe["close"] > dataframe["prior_high_96"])
                 & (dataframe["volume"] > dataframe["vol_ma"] * 1.5)
-                & (dataframe["roc"] > 5.0)
             )
-
-        if metadata.get("pair") == "SOL/USDT":
-            entry_condition &= False
 
         dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
