@@ -104,7 +104,7 @@ class RangeBreakout(IStrategy):
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
             (dataframe["close"] < dataframe["ema12"])
-            | (dataframe["roc"] < -2.5),
+            | (dataframe["roc"] < -2.0),
             "exit_long",
         ] = 1
         return dataframe
