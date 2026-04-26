@@ -59,8 +59,7 @@ class MomentumMTF(IStrategy):
         entry_condition = (
             (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & (dataframe["close"] > dataframe["ema50"])
-            & (dataframe["roc"] > 5.0)
-            & (dataframe["btc_usdt_roc_1h"] > 4.0)
+            & (dataframe["roc"] > 6.0)
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
         )
 

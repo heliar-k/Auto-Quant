@@ -58,13 +58,17 @@ class BTCLeaderBreakout(IStrategy):
             dataframe["btc_usdt_close_4h"].shift(1) <= dataframe["btc_usdt_dc_high10_4h"].shift(1)
         )
 
-        dataframe.loc[
+        entry_condition = (
             btc_break
             & (dataframe["btc_usdt_atr_4h"] > dataframe["btc_usdt_atr_ma20_4h"])
             & (dataframe["close"] > dataframe["ema50"])
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.25),
-            "enter_long",
-        ] = 1
+            & (dataframe["volume"] > dataframe["vol_ma"] * 1.5)
+        )
+
+        if metadata.get("pair") == "BTC/USDT":
+            entry_condition &= dataframe["btc_usdt_atr_4h"] > dataframe["btc_usdt_atr_ma20_4h"] * 1.2
+
+        dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
