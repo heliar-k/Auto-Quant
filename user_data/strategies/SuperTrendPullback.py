@@ -7,10 +7,10 @@ than EMA crosses on 1h crypto because it adapts to volatility. When SuperTrend
 is bullish and 1d EMA200 confirms the macro regime, buying RSI pullbacks within
 the trend captures continuation with lower heat than breakout-chasing entries.
 Parent: root
-Created: 1d43a28
+Created: TBD
 Status: active
-Uses MTF: yes (1d EMA200 regime, 4h EMA trend)
-Exit Mechanism: EMA21 trend break OR RSI>75 OR SuperTrend bearish (triple exit)
+Uses MTF: yes (1d EMA200 regime)
+Exit Mechanism: SuperTrend flips bearish OR RSI>75 (trend exhaustion)
 Exit Rationale: SuperTrend flip is the primary structural exit — when the
 ATR-based stop reverses, the trend is objectively broken. RSI>75 provides a
 secondary exit for overbought conditions within an intact trend, taking profits
@@ -40,12 +40,6 @@ class SuperTrendPullback(IStrategy):
 
     startup_candle_count: int = 300
 
-    @informative("4h")
-    def populate_indicators_4h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe["ema9"] = ta.EMA(dataframe, timeperiod=9)
-        dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
-        return dataframe
-
     @informative("1d")
     def populate_indicators_1d(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["ema200"] = ta.EMA(dataframe, timeperiod=200)
@@ -55,12 +49,11 @@ class SuperTrendPullback(IStrategy):
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         atr = ta.ATR(dataframe, timeperiod=10)
         hl_avg = (dataframe["high"] + dataframe["low"]) / 2
-        multiplier = 2.5
+        multiplier = 3.0
         dataframe["st_upper"] = hl_avg + multiplier * atr
         dataframe["st_lower"] = hl_avg - multiplier * atr
         # SuperTrend bullish: close above st_lower after being above it
         dataframe["st_bullish"] = dataframe["close"] > dataframe["st_lower"].shift(1)
-        dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
         dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
         dataframe["vol_ma"] = dataframe["volume"].rolling(20).mean()
         return dataframe
@@ -68,7 +61,6 @@ class SuperTrendPullback(IStrategy):
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         entry_condition = (
             (dataframe["close"] > dataframe["ema200_1d"])
-            & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & dataframe["st_bullish"]
             & (dataframe["close"] > dataframe["ema50"])
             & (dataframe["rsi"] >= 30)
@@ -81,9 +73,8 @@ class SuperTrendPullback(IStrategy):
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
-            (dataframe["close"] < dataframe["ema21"])
-            | (dataframe["rsi"] > 75)
-            | ~dataframe["st_bullish"],
+            ~dataframe["st_bullish"]
+            | (dataframe["rsi"] > 75),
             "exit_long",
         ] = 1
         return dataframe
