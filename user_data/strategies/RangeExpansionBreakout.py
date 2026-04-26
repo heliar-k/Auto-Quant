@@ -98,7 +98,7 @@ class RangeExpansionBreakout(IStrategy):
             & (dataframe["close"] > breakout_level)
             & (dataframe["close"] > dataframe["bb_upper"])
             & (dataframe["roc"] > 3.0)
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.15)
+            & (dataframe["volume"] > dataframe["vol_ma"] * 1.18)
         )
 
         if metadata.get("pair") == "BNB/USDT":
