@@ -51,6 +51,7 @@ class TrendMtfRegime(IStrategy):
     @informative("1h", "BTC/USDT")
     def populate_indicators_btc(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
+        dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
         return dataframe
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
@@ -64,6 +65,7 @@ class TrendMtfRegime(IStrategy):
             (dataframe["close"] > dataframe["ema200_1d"])
             & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & (dataframe["btc_usdt_rsi_1h"] > 45)
+            & (dataframe["btc_usdt_close_1h"] > dataframe["btc_usdt_ema50_1h"])
             & (dataframe["close"] > dataframe["ema50"])
             & (dataframe["rsi"] > 34)
             & (dataframe["rsi"] < 46)
