@@ -66,13 +66,13 @@ class RangeBreakout(IStrategy):
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        breakout_level = dataframe["prior_high_96"]
-
-        if metadata.get("pair") == "BTC/USDT":
-            breakout_level = dataframe["prior_high_48"]
+        breakout_level = dataframe["prior_high_72"]
 
         if metadata.get("pair") == "AVAX/USDT":
             breakout_level = dataframe["prior_high_96"]
+
+        if metadata.get("pair") == "BTC/USDT":
+            breakout_level = dataframe["prior_high_48"]
 
         entry_condition = (
             (dataframe["close"] > dataframe["ema100_1d"])
@@ -80,16 +80,14 @@ class RangeBreakout(IStrategy):
             & (dataframe["btc_usdt_roc_1h"] > 2.0)
             & (dataframe["btc_usdt_rsi_1h"] > 50)
             & (dataframe["close"] > breakout_level)
-            & (dataframe["rsi"] > 52)
-            & (dataframe["rsi"] < 70)
-            & (dataframe["roc"] > 4.0)
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.3)
+            & (dataframe["rsi"] > 50)
+            & (dataframe["rsi"] < 72)
+            & (dataframe["roc"] > 3.0)
+            & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
         )
 
         if metadata.get("pair") in ("ETH/USDT", "BNB/USDT"):
-            entry_condition &= (
-                (dataframe["volume"] > dataframe["vol_ma"] * 1.5)
-            )
+            entry_condition &= False
 
         dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
