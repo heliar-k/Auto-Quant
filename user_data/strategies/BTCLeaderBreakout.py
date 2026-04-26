@@ -75,7 +75,7 @@ class BTCLeaderBreakout(IStrategy):
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
             (dataframe["close"] < dataframe["ema21"])
-            | (dataframe["roc"] < -2.5),
+            | (dataframe["roc"] < -1.5),
             "exit_long",
         ] = 1
         return dataframe
