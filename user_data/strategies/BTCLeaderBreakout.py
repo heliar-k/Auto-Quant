@@ -11,7 +11,7 @@ Parent: root
 Created: a38cfb7
 Status: active
 Uses MTF: yes (BTC 4h Donchian+ATR, local 4h trend, 1d regime)
-Exit Mechanism: dual exit — close<EMA21 OR ROC<-1.0
+Exit Mechanism: dual exit — close<EMA21 OR ROC<-1.5 (BNB disabled)
 Exit Rationale: BTC-led breakouts fade predictably when BTC momentum stalls.
 EMA21 catches the trend break; ROC<-1.0 catches momentum failure before the
 EMA signal. Dual exit is load-bearing for cross-pair-primary because the
@@ -77,13 +77,16 @@ class BTCLeaderBreakout(IStrategy):
         if metadata.get("pair") == "BTC/USDT":
             entry_condition &= dataframe["atr"] > dataframe["atr_ma"] * 1.2
 
+        if metadata.get("pair") == "BNB/USDT":
+            entry_condition &= False
+
         dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
             (dataframe["close"] < dataframe["ema21"])
-            | (dataframe["roc"] < -1.0),
+            | (dataframe["roc"] < -1.5),
             "exit_long",
         ] = 1
         return dataframe

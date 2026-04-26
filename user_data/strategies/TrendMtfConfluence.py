@@ -11,7 +11,7 @@ Parent: root
 Created: a38cfb7
 Status: active
 Uses MTF: yes (1d EMA200 regime, 4h EMA trend)
-Exit Mechanism: RSI>78 (overbought exhaustion) OR 4h EMA9<EMA21 (trend break)
+Exit Mechanism: RSI>80 (overbought exhaustion) OR 4h EMA9<EMA21 (trend break)
 Exit Rationale: trend-following exits must balance two risks — exiting too
 early clips the trend, exiting too late surrenders gains. RSI>78 only triggers
 at genuine overbought extremes (confirmed optimum from v0.3.0 bracketing at
@@ -72,7 +72,7 @@ class TrendMtfConfluence(IStrategy):
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
-            (dataframe["rsi"] > 78)
+            (dataframe["rsi"] > 80)
             | (dataframe["ema9_4h"] < dataframe["ema21_4h"]),
             "exit_long",
         ] = 1
