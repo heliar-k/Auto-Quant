@@ -84,7 +84,7 @@ class RangeBreakout(IStrategy):
             & (dataframe["close"] > breakout_level)
             & (dataframe["rsi"] > 50)
             & (dataframe["rsi"] < 72)
-            & (dataframe["roc"] > 3.0)
+            & (dataframe["roc"] > 2.0)
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
         )
 
