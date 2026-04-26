@@ -4,12 +4,11 @@ TrendMtfRegime — multi-TF trend-following with 1d regime filter
 Paradigm: trend-following
 Hypothesis: 4h EMA trend + 1d EMA200 regime + 1h RSI pullback entries form a robust
 trend-following system that survives bear markets via the 1d regime filter (close >
-EMA200). The apr26 run proved 1d regime filters prevent catastrophic overfitting;
-this strategy bakes the regime filter in as a structural requirement from day one.
+EMA200). BTC cross-pair RSI ensures market-wide participation in the trend.
 Parent: root
 Created: apr26b-setup
 Status: active
-Uses MTF: yes (4h EMA trend + 1d EMA200 regime)
+Uses MTF: yes (4h EMA trend + 1d EMA200 regime + cross-pair BTC RSI)
 Exit Mechanism: 4h EMA9<EMA21 (trend broken) OR 1h RSI>75 (overbought exhaustion)
 Exit Rationale: trend-following exits must balance letting trends run vs protecting
 profits. 4h EMA cross catches structural trend failure, while RSI>75 catches
@@ -42,12 +41,16 @@ class TrendMtfRegime(IStrategy):
     def populate_indicators_4h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["ema9"] = ta.EMA(dataframe, timeperiod=9)
         dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
-        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         return dataframe
 
     @informative("1d")
     def populate_indicators_1d(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["ema200"] = ta.EMA(dataframe, timeperiod=200)
+        return dataframe
+
+    @informative("1h", "BTC/USDT")
+    def populate_indicators_btc(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         return dataframe
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
@@ -60,11 +63,10 @@ class TrendMtfRegime(IStrategy):
         entry_condition = (
             (dataframe["close"] > dataframe["ema200_1d"])
             & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
-            & (dataframe["rsi_4h"] > 45)
-            & (dataframe["rsi_4h"] < 65)
+            & (dataframe["btc_usdt_rsi_1h"] > 45)
             & (dataframe["close"] > dataframe["ema50"])
-            & (dataframe["rsi"] > 35)
-            & (dataframe["rsi"] < 48)
+            & (dataframe["rsi"] > 34)
+            & (dataframe["rsi"] < 46)
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
         )
 
