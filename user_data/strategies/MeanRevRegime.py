@@ -46,7 +46,7 @@ class MeanRevRegime(IStrategy):
 
     @informative("1d")
     def populate_indicators_1d(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
+        dataframe["ema200"] = ta.EMA(dataframe, timeperiod=200)
         return dataframe
 
     @informative("1h", "BTC/USDT")
@@ -64,12 +64,12 @@ class MeanRevRegime(IStrategy):
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         entry_condition = (
-            (dataframe["close"] > dataframe["ema50_1d"])
-            & (dataframe["rsi_4h"] < 50)
+            (dataframe["close"] > dataframe["ema200_1d"])
+            & (dataframe["rsi_4h"] < 40)
             & (dataframe["btc_usdt_rsi_1h"] < 40)
-            & (dataframe["rsi"] < 30)
+            & (dataframe["rsi"] < 28)
             & (dataframe["close"] < dataframe["bb_lower"])
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.5)
+            & (dataframe["volume"] > dataframe["vol_ma"] * 2.0)
         )
 
         if metadata.get("pair") in ("SOL/USDT", "AVAX/USDT"):
