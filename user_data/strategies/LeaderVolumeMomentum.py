@@ -10,7 +10,7 @@ Parent: root
 Created: e772907
 Status: active
 Uses MTF: yes (4h trend + cross-pair BTC ROC)
-Exit Mechanism: pure ROC < -3.0 (momentum-failure exit, tight enough to protect gains)
+Exit Mechanism: pure ROC < -4.0 (slow momentum-failure exit)
 Exit Rationale: momentum strategies must let trends run; premature exits clip
 winners. Pure ROC exit catches genuine momentum failure without the false
 positives that EMA-based exits trigger during pullbacks within a trend
@@ -61,7 +61,7 @@ class LeaderVolumeMomentum(IStrategy):
         entry_condition = (
             (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & (dataframe["close"] > dataframe["ema50"])
-            & (dataframe["roc"] > 5.0)
+            & (dataframe["roc"] > 7.0)
             & (dataframe["btc_usdt_roc_1h"] > 4.0)
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
         )
@@ -88,5 +88,5 @@ class LeaderVolumeMomentum(IStrategy):
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe.loc[dataframe["roc"] < -3.0, "exit_long"] = 1
+        dataframe.loc[dataframe["roc"] < -4.0, "exit_long"] = 1
         return dataframe
