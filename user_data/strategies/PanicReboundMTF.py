@@ -71,7 +71,7 @@ class PanicReboundMTF(IStrategy):
             & (dataframe["btc_usdt_roc_1h"] < 1.5)
             & (dataframe["rsi"] < 32)
             & (dataframe["close"] < dataframe["bb_lower"])
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.10)
+            & (dataframe["volume"] > dataframe["vol_ma"] * 1.05)
         )
 
         if metadata.get("pair") == "AVAX/USDT":
