@@ -81,7 +81,7 @@ class TrendMtfRegime(IStrategy):
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
             (dataframe["ema9_4h"] < dataframe["ema21_4h"])
-            | (dataframe["rsi"] > 72),
+            | (dataframe["rsi"] > 73),
             "exit_long",
         ] = 1
         return dataframe
