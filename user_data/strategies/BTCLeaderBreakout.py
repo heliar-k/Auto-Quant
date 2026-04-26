@@ -62,14 +62,11 @@ class BTCLeaderBreakout(IStrategy):
             btc_break
             & (dataframe["btc_usdt_atr_4h"] > dataframe["btc_usdt_atr_ma20_4h"])
             & (dataframe["close"] > dataframe["ema50"])
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.5)
+            & (dataframe["volume"] > dataframe["vol_ma"] * 1.75)
         )
 
         if metadata.get("pair") == "BTC/USDT":
             entry_condition &= dataframe["btc_usdt_atr_4h"] > dataframe["btc_usdt_atr_ma20_4h"] * 1.2
-
-        if metadata.get("pair") == "BNB/USDT":
-            entry_condition &= dataframe["volume"] > dataframe["vol_ma"] * 2.0
 
         dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
