@@ -11,7 +11,7 @@ Parent: root
 Created: 9761eed
 Status: active
 Uses MTF: yes (BTC 4h ROC, local 4h EMA trend, 1d EMA200 regime)
-Exit Mechanism: dual exit — close<EMA21 OR ROC<-2.0
+Exit Mechanism: dual exit — close<EMA21 OR ROC<-1.5 (BNB disabled)
 Exit Rationale: BTC momentum-led moves fade when BTC momentum decelerates.
 EMA21 catches structural trend break; ROC<-2.0 catches the momentum failure
 before the EMA signal confirms. Dual exit is paradigm-appropriate because
@@ -74,13 +74,16 @@ class BTCMomentumLeader(IStrategy):
 
         entry_condition = btc_momentum_surge & local_trend & volume_ok & (dataframe["roc"] > 3.0)
 
+        if metadata.get("pair") == "BNB/USDT":
+            entry_condition &= False
+
         dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
             (dataframe["close"] < dataframe["ema21"])
-            | (dataframe["roc"] < -2.0),
+            | (dataframe["roc"] < -1.5),
             "exit_long",
         ] = 1
         return dataframe
