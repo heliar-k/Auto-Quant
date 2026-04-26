@@ -59,8 +59,7 @@ class MomentumMTF(IStrategy):
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         entry_condition = (
-            (dataframe["close_4h"] > dataframe["ema50_4h"])
-            & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
+            (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & (dataframe["close"] > dataframe["ema50"])
             & (dataframe["roc"] > 5.0)
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
