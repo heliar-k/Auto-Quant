@@ -43,7 +43,7 @@ class BTCLeaderBreakout(IStrategy):
 
     @informative("4h", "BTC/USDT")
     def populate_indicators_btc_4h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe["donchian_high"] = dataframe["high"].rolling(20).max().shift(1)
+        dataframe["donchian_high"] = dataframe["high"].rolling(18).max().shift(1)
         dataframe["atr"] = ta.ATR(dataframe, timeperiod=14)
         dataframe["atr_ma"] = dataframe["atr"].rolling(20).mean()
         dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
