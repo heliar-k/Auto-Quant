@@ -54,6 +54,7 @@ class KeltnerBreakout(IStrategy):
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["ema12"] = ta.EMA(dataframe, timeperiod=12)
         dataframe["ema20"] = ta.EMA(dataframe, timeperiod=20)
+        dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
         atr = ta.ATR(dataframe, timeperiod=10)
         dataframe["kc_upper"] = dataframe["ema20"] + 2.5 * atr
         dataframe["kc_lower"] = dataframe["ema20"] - 2.5 * atr
@@ -66,7 +67,9 @@ class KeltnerBreakout(IStrategy):
         entry_condition = (
             (dataframe["close"] > dataframe["ema200_1d"])
             & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
+            & (dataframe["close"] > dataframe["ema50"])
             & (dataframe["close"] > dataframe["kc_upper"])
+            & (dataframe["rsi"] < 70)
             & (dataframe["roc"] > 4.0)
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.5)
         )
