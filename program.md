@@ -1,21 +1,94 @@
-# Auto-Quant v0.3.0 — multi-strategy + multi-timeframe + multi-asset portfolio
+# Auto-Quant v0.4.0 — multi-regime + out-of-sample + cap=5 + exit-as-design
+
+Four structural improvements on top of v0.3.x's validated 4-paradigm foundation:
+
+1. **Multi-regime backtesting**: extend timerange to 2021-2026, covering bear + bull.
+2. **Out-of-sample validation**: train on 2023-2024, test on 2025-2026 Q1.
+3. **Cap=5**: raise hard cap from 3 to 5 active strategies.
+4. **Exit-as-design**: exit mechanism as a first-class design decision.
+
+---
+
+## What's new in v0.4.0
+
+### 1. Multi-regime backtesting
+
+All v0.3.x runs used 2023-2025 only — a nearly uninterrupted bull market. No
+strategy was ever tested in a bear market. v0.4.0 extends data to cover
+**2021-01-01 → 2026-01-29**: the 2021 bull, 2022 bear, and 2023-2025 recovery.
+
+New data required:
+- 2021-01-01 to 2022-12-31 for all 15 files (5 pairs × 3 timeframes)
+- `prepare.py` handles this
+
+Key questions the extended regime answers:
+- Does BTCLeaderBreakout (cross-pair primary) survive when BTC breakouts fail?
+- Does momentum collapse in trend reversals?
+- Does mean-reversion improve in bear markets (as theory predicts)?
+- Are pair exclusions (SOL/AVAX in panic, BNB in momentum) stable across regimes?
+
+### 2. Out-of-sample validation
+
+All v0.3.x tuning used the full timerange for both iteration and evaluation.
+v0.4.0 splits into:
+
+| period | timerange | purpose |
+|---|---|---|
+| **train** | `20230101-20241231` | experiment loop — all iteration happens here |
+| **test** | `20250101-20260129` | held out — single validation after loop concludes |
+
+The experiment loop runs exclusively on the train period. After the loop
+concludes, strategies are validated once on the test period. No parameter
+tuning on test data — pure evaluation.
+
+`run.py` accepts an optional `--timerange` argument to override the default
+(train) timerange for final validation.
+
+### 3. Cap=5
+
+v0.3.x validated 4 distinct paradigms:
+- Cross-pair primary (BTCLeaderBreakout, Sharpe 0.91)
+- Momentum (MomentumMTF, Sharpe 0.83)
+- Mean-reversion (PanicReboundMTF, Sharpe 0.66)
+- Volatility breakout (RangeExpansionBreakout, Sharpe 0.53)
+
+Cap=3 prevented all four from coexisting, and fork was used only once across
+197 combined rounds. Cap=5 allows all validated paradigms to form a permanent
+portfolio plus one experimental slot for new ideas.
+
+### 4. Exit mechanism as first-class design object
+
+v0.3.1's single clearest finding: exit mechanisms are paradigm-specific.
+
+| exit pattern | cross-pair primary | momentum | mean-reversion |
+|---|---|---|---|
+| dual exit (EMA+ROC) | **+0.02** Sharpe | **-0.29** Sharpe | n/a |
+| pure ROC | untested | **baseline** | n/a |
+| RSI+BB conditional | n/a | n/a | **baseline** |
+
+v0.4.0 requires each strategy to declare its exit logic as a primary design
+decision — alongside paradigm and entry signal — with explicit rationale
+linking exit mechanism to paradigm. Exit is not a post-hoc tuning parameter.
+
+---
+
+## Foundation (v0.3.x)
 
 This is an experiment to have the LLM do its own quantitative research across
 **multiple parallel strategies** that can combine signals across **multiple
 timeframes** (1h base + 4h + 1d) and **multiple assets** (5-pair universe with
 cross-asset signal references).
 
+v0.3.0 (3 runs, 178 rounds) proved MTF + cross-pair affordances are load-bearing
+and asset × paradigm interaction dominates aggregate tuning. v0.3.1 (1 run, 19
+rounds) resurrected cross-pair-as-primary as a 4th paradigm (Sharpe 0.91) and
+injected buy-and-hold benchmark reporting into `run.py`.
+
 The core bet of v0.2.0 was multi-strategy: maintaining up to 3 strategies in
 parallel resisted single-paradigm anchoring. That worked — see
-`versions/0.2.0/retrospective.md`. v0.3.0 opens two new dimensions on top:
-
-- **Multi-timeframe**: strategies can reference 4h and 1d context via
-  FreqTrade's `@informative` decorator. v0.2.0's peak Sharpe of 0.67 was
-  constrained by 1h-only inputs.
-- **Multi-asset portfolio**: universe expands from 2 pairs (BTC, ETH) to
-  5 pairs (BTC, ETH, SOL, BNB, AVAX). `run.py` now reports **aggregate +
-  per-pair metrics** so the agent sees per-asset edge, not just the
-  portfolio aggregate that hid asset-specific behaviour in v0.2.0.
+`versions/0.2.0/retrospective.md`. v0.3.0 opened multi-timeframe, multi-asset,
+and per-pair reporting. v0.4.0 opens multi-regime, out-of-sample validation,
+cap=5, and exit-as-design.
 
 ## Setup
 
@@ -26,9 +99,9 @@ To set up a new experiment, work with the user to:
 2. **Create the branch**: `git checkout -b autoresearch/<tag>` from current `master`.
 3. **Read the in-scope files**. The repo is small. Read these files for full context:
    - `README.md` — repository context
-   - `config.json` — fixed FreqTrade config (pairs, timeframe, fees). Do not modify.
-   - `prepare.py` — data download. Do not modify.
-   - `run.py` — the batch backtest oracle. Do not modify.
+   - `config.json` — fixed FreqTrade config (pairs, timeframe, fees).
+   - `prepare.py` — data download.
+   - `run.py` — the batch backtest oracle.
    - `user_data/strategies/_template.py.example` — skeleton for new strategies.
      **Note:** the folder may also contain `__pycache__`; ignore it.
    - `versions/0.1.0/retrospective.md` and `versions/0.2.0/retrospective.md`
@@ -36,35 +109,40 @@ To set up a new experiment, work with the user to:
      single-paradigm anchoring failure mode + 3 Goodhart exploits the agent
      eventually rolled back. v0.2.0 documents the multi-strategy response
      and 5 paradigms tested (3 with clean positive edge).
-4. **Verify data exists**: Check that all fifteen data files exist under
-   `user_data/data/` — 5 pairs × 3 timeframes:
+   - `versions/0.3.0/retrospective.md` — 3-run synthesis: pair-specialized
+     portfolio construction, 5 paradigms tested.
+   - `versions/0.3.1/retrospective.md` — cross-pair primary signal validation,
+     exit paradigm-specificity, benchmark injection.
+4. **Verify data exists**: Check that needed data files exist under
+   `user_data/data/`. For the full multi-regime run:
    - `BTC_USDT-{1h,4h,1d}.feather`
    - `ETH_USDT-{1h,4h,1d}.feather`
    - `SOL_USDT-{1h,4h,1d}.feather`
    - `BNB_USDT-{1h,4h,1d}.feather`
    - `AVAX_USDT-{1h,4h,1d}.feather`
 
+   Data must cover at least the train period (`20230101-20241231`).
+   For the full multi-regime run, data should cover `20210101-20260129`.
    If any are missing, tell the user to run `uv run prepare.py`.
 5. **Initialize results.tsv**: Create `results.tsv` with just the header row:
    ```
    commit	event	strategy_name	sharpe	max_dd	note
    ```
    Tab-separated. Do not commit this file — it's gitignored on purpose.
-6. **Create 1-3 starting strategies.** This is the most important setup step.
+6. **Create 1-5 starting strategies.** This is the most important setup step.
    - Each strategy goes in its own file: `user_data/strategies/<YourName>.py`
    - Class name MUST match filename stem (FreqTrade requirement)
-   - Each strategy's docstring MUST fill all 6 metadata fields
-     (Paradigm, Hypothesis, Parent, Created, Status, Uses MTF)
-   - **Each strategy MUST target a different paradigm.** Don't create 3
-     mean-reversion variants as a "safe start" — that defeats the whole point
-     of v0.2.0+. Pick from: mean-reversion, trend-following, volatility,
-     breakout, other. At least 2 different categories.
-   - **Strongly encouraged**: at least one of the starting strategies should
-     use the multi-timeframe affordance (see "Multi-timeframe" section below).
-     Otherwise v0.3.0 doesn't exercise the new capability and we'll have
-     learned nothing new vs v0.2.0. This is encouragement not mandate — if
-     you have strong reasoning to make all 3 single-TF, write that reasoning
-     in the notes.
+   - Each strategy's docstring MUST fill all 8 metadata fields:
+     Paradigm, Hypothesis, Parent, Created, Status, Uses MTF, Exit Mechanism, Exit Rationale
+   - **Each strategy MUST target a different paradigm.** Don't create 5
+     mean-reversion variants as a "safe start." Pick from: mean-reversion,
+     trend-following, momentum, volatility, breakout, cross-pair-primary,
+     other. At least 3 different categories.
+   - **Strongly encouraged**: at least one strategy should use each of the
+     major affordances: MTF, cross-pair, and pair-specific gates.
+   - **Exit mechanism is a primary design field.** Each strategy must state
+     its exit logic and explain why it fits the paradigm (see "Exit as design"
+     section below).
    - Keep each strategy minimal initially. You'll iterate in the loop.
 7. **Confirm and go**: Confirm setup looks good with the user.
 
@@ -72,10 +150,11 @@ Once you get confirmation, kick off the experimentation.
 
 ## Experimentation
 
-Each round runs a backtest on ALL active strategies on a **fixed timerange**
-(`20230101-20251231`) across the **5-pair portfolio** (BTC, ETH, SOL, BNB,
-AVAX) at 1h base. `run.py` emits one `---` summary block per strategy,
-containing both portfolio-aggregate metrics AND per-pair breakdown.
+Each round runs a backtest on ALL active strategies on the **train timerange**
+(`20230101-20241231`) across the **5-pair portfolio** (BTC, ETH, SOL, BNB,
+AVAX) at 1h base. `run.py` emits one `---` summary block per strategy plus
+a `__benchmark__` block, containing both portfolio-aggregate metrics AND
+per-pair breakdown.
 
 ### What you CAN do
 
@@ -86,20 +165,42 @@ containing both portfolio-aggregate metrics AND per-pair breakdown.
 
 ### What you CANNOT do
 
-- Modify `prepare.py`, `run.py`, or `config.json`. These are the evaluation
-  contract.
+- Modify `prepare.py`. This is the data download contract.
 - `uv add` new dependencies. Use what's already in `pyproject.toml`.
 - Call the `freqtrade` CLI directly. The only way to run backtests is via
   `uv run run.py`.
-- Modify the timerange, pair list, or `_template.py.example`.
-- Have more than 3 active strategies at any time (see hard cap below).
+- Modify the pair list or `_template.py.example`.
 - Request timeframes other than `1h`, `4h`, `1d` OR pairs other than the
   5 in the whitelist in `@informative` decorators. Anything else will crash
   the backtest with a missing-data error.
 
-### Multi-timeframe + cross-asset affordance (new in v0.3.0)
+### What you can modify (v0.4.0 expanded)
 
-Data is pre-downloaded for **three timeframes × five pairs = 15 combinations**:
+- `config.json`: `max_open_trades` may be adjusted if cap changes.
+- `run.py`: the `TIMERANGE` constant and train/test configuration may be
+  modified for v0.4.0's time-split infrastructure. Core backtest logic
+  (strategy discovery, metric extraction, benchmark injection) remains
+  unchanged.
+
+### Train/test split (new in v0.4.0)
+
+The experiment loop runs on the **train period** (`20230101-20241231`).
+The **test period** (`20250101-20260129`) is held out.
+
+- **During the loop**: all backtests use the train timerange. All evolve,
+  fork, kill decisions are based on train metrics only.
+- **After the loop**: strategies are validated once on the test period:
+  ```
+  uv run run.py --timerange 20250101-20260129 > run-test.log 2>&1
+  ```
+- Do NOT tune parameters on test results. The test validation is a single
+  pass for reporting. If a strategy performs well on train but poorly on
+  test, flag it as overfit in the retrospective.
+
+### Multi-timeframe + cross-asset affordance
+
+Data is pre-downloaded for **three timeframes × five pairs = 15 combinations**
+(plus extended history for multi-regime):
 
 | Timeframe | Pairs |
 |---|---|
@@ -158,12 +259,8 @@ def populate_btc_1h(self, dataframe, metadata):
 # Column naming: `{base}_{quote}_{col}_{tf}`, lowercase, underscore-separated.
 ```
 
-**Cross-pair asymmetry** — important subtlety: `@informative('1h', 'ETH/USDT')`
-always pulls ETH data regardless of which pair the strategy is currently
-processing. When processing BTC, that gives you BTC main + ETH context
-(useful). When processing ETH itself, you get ETH's data alongside itself
-(redundant). For truly symmetric cross-pair strategies (e.g., BTC/ETH ratio
-that means something on BOTH pairs), use `informative_pairs()` with a
+For truly symmetric cross-pair strategies (e.g., BTC/ETH ratio that means
+something on BOTH pairs), use `informative_pairs()` with a
 `metadata['pair']`-conditional branch inside `populate_indicators`.
 
 **Key properties** (FreqTrade handles these for you):
@@ -180,21 +277,42 @@ that means something on BOTH pairs), use `informative_pairs()` with a
 - Volatility context (`atr_4h` for relative-vol positioning)
 
 **When to use cross-pair:**
-- Relative value / ratio plays (`close / btc_usdt_close_1h`)
 - Leader/follower dynamics (BTC often leads ETH/altcoins on 4h)
 - Diversification checks ("only enter if BTC isn't crashing")
+- Cross-pair primary signal (BTC breakout triggers entries on all altcoins)
 
 **When NOT to use either:**
 - If the paradigm doesn't have an intuitive MTF/cross-pair analog, don't force it.
-  v0.2.0's MeanRevBB was pure 1h single-pair and hit 0.52 Sharpe.
 
 **`startup_candle_count`** — bump up for slow indicators on higher TFs. EMA200
 on 1d needs 200 daily bars = 4800 hourly bars of warmup. Starting at 250-300
 is usually safe for most MTF configurations.
 
-### Per-pair reporting (new in v0.3.0)
+### Exit as design (new in v0.4.0)
 
-`run.py` output now includes a `per_pair:` section after the aggregate
+Each strategy's docstring MUST include two additional fields:
+
+```
+Exit Mechanism: <brief description of exit logic>
+Exit Rationale: <why this exit fits this paradigm>
+```
+
+Examples of paradigm-exit fit:
+
+| paradigm | well-matched exit | rationale |
+|---|---|---|
+| cross-pair primary | dual: EMA21 + ROC | BTC-led moves fade predictably; fast exit catches momentum failure |
+| momentum | slow: pure ROC -3 | trends have pullbacks; premature exit clips winners |
+| mean-reversion | conditional: RSI + BB mid | mean reversion completes when price returns to center |
+| volatility breakout | fast: EMA12 + RSI guard | breakout energy dissipates quickly; fast exit protects profits |
+
+An ill-matched exit (e.g., EMA21 on momentum) can destroy performance
+regardless of entry quality. The exit rationale must be explicit and
+defensible before the strategy enters the experiment loop.
+
+### Per-pair reporting
+
+`run.py` output includes a `per_pair:` section after the aggregate
 metrics. Example:
 
 ```
@@ -225,14 +343,13 @@ surface. Things to look for:
 In your `results.tsv` notes, when a result varies substantially across pairs,
 **call it out explicitly** — e.g., "Sharpe 0.45 aggregate but SOL=-0.10 and
 BNB=+0.80; signal is BNB-heavy, trade count 40 not enough". These are the
-observations that make the run's knowledge output per-asset-profile-shaped
-(the original project goal).
+observations that make the run's knowledge output per-asset-profile-shaped.
 
 ### Hard rules on strategy lifecycle
 
-**Rule 1: Hard cap — 3 active strategies.**
-At any moment, `user_data/strategies/` must contain at most 3 non-underscore
-`.py` files. To add a 4th, you must first `git rm` one of the existing.
+**Rule 1: Hard cap — 5 active strategies.**
+At any moment, `user_data/strategies/` must contain at most 5 non-underscore
+`.py` files. To add a 6th, you must first `git rm` one of the existing.
 
 **Rule 2: Stagnation gate — 3 stable rounds.**
 Each round, every strategy gets one of these events logged in `results.tsv`:
@@ -246,7 +363,7 @@ Each round, every strategy gets one of these events logged in `results.tsv`:
 **If a strategy has accumulated 3 consecutive `stable` events with no `evolve`
 or `fork`, the next round it MUST receive one of: `evolve`, `fork`, or `kill`.**
 Cannot sit idle for a 4th stable round. You decide which treatment. This rule
-exists because the cap is 3 — we can't afford a slot sitting still.
+exists because the cap is limited — we can't afford a slot sitting still.
 
 **Rule 3: Every round must touch at least one strategy.**
 A round where all events are `stable` is not an experiment — it's wasted time.
@@ -254,20 +371,26 @@ At minimum, evolve one strategy per round. (Exception: the very first backtest
 round right after setup, where you log `create` events for what you built.)
 
 **Rule 4: Paradigm diversity at setup.**
-See setup step 6 above. First 1-3 strategies must target different paradigms.
+See setup step 6 above. First 1-5 strategies must target different paradigms.
 After that, you're free to create same-paradigm variants (e.g. two
 mean-reversion approaches with different signals) — but sparingly. Diversity
-is more valuable than depth in this run.
+is more valuable than depth.
+
+**Rule 5: Exit rationale required.**
+Every strategy created or forked in v0.4.0 must include `Exit Mechanism` and
+`Exit Rationale` fields in its docstring. Existing strategies carried over
+from v0.3.x should have these fields added before any evolution.
 
 ## Output format
 
-Once `run.py` finishes, stdout has one `---` block per strategy, like:
+Once `run.py` finishes, stdout has one `---` block per strategy, plus a
+`__benchmark__` block, like:
 
 ```
 ---
 strategy:         MeanRevRSI
 commit:           abc1234
-timerange:        20230101-20251231
+timerange:        20230101-20241231
 sharpe:           0.8234
 sortino:          1.0412
 calmar:           0.5821
@@ -276,12 +399,20 @@ max_drawdown_pct: -8.9123
 trade_count:      142
 win_rate_pct:     54.2300
 profit_factor:    1.6700
-pairs:            BTC/USDT,ETH/USDT
+pairs:            BTC/USDT,ETH/USDT,SOL/USDT,BNB/USDT,AVAX/USDT
+per_pair:
+  BTC/USDT: sharpe=0.6200 trades=45 profit_pct=18.50 dd_pct=-3.20 wr=58.0 pf=1.72
+  ...
 
 ---
-strategy:         TrendDonchian
-commit:           abc1234
-...
+strategy:                __benchmark__
+type:                    buy-and-hold
+timerange:               20230101-20241231
+equal_weight_profit_pct: XXX.XX
+equal_weight_dd_pct:     -XX.XX
+per_pair:
+  BTC/USDT: profit_pct=XXX.XX dd_pct=-XX.XX
+  ...
 ```
 
 If a strategy crashes, its block looks like:
@@ -351,7 +482,7 @@ LOOP FOREVER:
      for something new), or "fork A→A' and evolve B" (two strategies touched)
 
 3. **Respect the rules.** In particular:
-   - Cap: max 3 active strategies after this round's changes
+   - Cap: max 5 active strategies after this round's changes
    - Stagnation: any strategy with 3 prior consecutive `stable` events must
      be evolved, forked, or killed THIS round
    - Every round touches ≥ 1 strategy
@@ -389,9 +520,10 @@ LOOP FOREVER:
 
 A strategy deserves to stay if:
 - It has positive edge (Sharpe > 0, profit factor > 1) with meaningful trade
-  count (>20 trades over 3 years)
+  count (>20 trades over 2 years of train data)
 - Its paradigm is distinct from what the other active strategies cover
 - Recent evolutions have moved it in the right direction
+- Its exit mechanism aligns with its paradigm
 
 A strategy deserves to die if:
 - It's been stable for 3 rounds with no improvement and you don't have a new
@@ -399,12 +531,25 @@ A strategy deserves to die if:
 - Its paradigm overlaps strongly with another active strategy that's doing
   better
 - You need its slot for a fresh paradigm you want to try
-- It's consistently negative and further tweaks won't help (e.g. wrong
-  timeframe for this paradigm)
+- It's consistently negative and further tweaks won't help
+- Its exit mechanism is misaligned with its paradigm and structural fixes fail
 
 **Always log your reasoning.** These notes become the retrospective —
 future you (and the meta-analysis layer) will read them to extract what this
-run actually learned about BTC/ETH 1h.
+run actually learned.
+
+### Final validation (new in v0.4.0)
+
+After the experiment loop concludes:
+
+1. **Run on test timerange**: `uv run run.py --timerange 20250101-20260129 > run-test.log 2>&1`
+2. **Compare train vs test metrics**: flag strategies with large performance
+   gaps as potentially overfit.
+3. **Run on full timerange** (optional): `uv run run.py --timerange 20210101-20260129 > run-full.log 2>&1`
+   for a multi-regime performance picture spanning the 2021 bull, 2022 bear,
+   and 2023-2025 recovery.
+4. **Document regime-specific behavior**: which strategies survive the bear?
+   Which thrive? These observations are the main knowledge output of v0.4.0.
 
 ### Goodhart watch
 
@@ -414,7 +559,7 @@ From v0.1.0 we learned the agent can inadvertently game the metric:
 - Tight `minimal_roi` clipping → tiny uniform returns → low stddev → huge
   Sharpe (profit goes DOWN even as Sharpe goes UP)
 
-**v0.2.0 added zero new Goodhart exploits over 81 rounds — try to keep that streak.**
+**v0.2.0, v0.3.0, and v0.3.1 added zero new Goodhart exploits — try to keep that streak.**
 
 If you find a Sharpe jump that comes with a profit drop or a DD collapse to
 ~0, that's a gaming signal, not real edge. Log it, document the mechanism,
@@ -423,10 +568,14 @@ not edge" in the description.
 
 Multi-strategy helps here: if strategy A's Sharpe jumps while B and C stay
 flat on the same data, A's jump is more likely a real discovery. If ALL
-three strategies' Sharpe jumped on the same commit — you probably modified
+strategies' Sharpe jumped on the same commit — you probably modified
 something shared, or the oracle itself has a hole.
 
-**Timeout**: each full round (3 strategies × backtest) should take under 3
+With the train/test split, overfitting becomes more detectable: a strategy
+that looks great on train but fails on test is likely overfit, not genuinely
+good. Flag such cases prominently in the retrospective.
+
+**Timeout**: each full round (5 strategies × backtest) should take under 5
 minutes. If a single run exceeds 10 minutes, kill it and treat it as a
 failure (revert the commit, skip the round).
 
@@ -439,23 +588,19 @@ the computer, and expects you to continue working *indefinitely* until
 manually stopped.
 
 If you run out of ideas:
-- **Re-read `versions/0.1.0/retrospective.md` and `versions/0.2.0/retrospective.md`**
-  — v0.1.0 listed directions it never tried (multi-timeframe was one!);
-  v0.2.0 attempted 5 paradigms and identified specific plateau ceilings per paradigm
-- Apply multi-timeframe to a stagnant strategy (if not using MTF yet) —
-  that's literally the new affordance of v0.3.0
+- **Re-read all retrospectives** (`versions/0.1.0/`, `0.2.0/`, `0.3.0/`,
+  `0.3.1/`) — each documents specific open questions and untested directions
+- Apply multi-regime thinking: "would this change help in a bear market?"
+- Apply exit-as-design thinking: "is this exit mechanism paradigm-appropriate?"
 - Look at your stagnant strategies — can you fork them with a bolder change?
-- Try combining winners from different paradigms (e.g. a volatility-gated
-  version of a winning mean-reversion strategy)
+- Try combining winners from different paradigms
 - Try completely new indicator families you haven't touched
-- Check v0.2.0's comparative findings (volume-filter universal, ATR
-  paradigm-specific, regime-window paradigm-specific, ADX-lag universal) —
-  see if any transfer to your current strategies in ways v0.2.0 never tested
-  (e.g., 4h volume expansion instead of 1h)
+- Check the paradigm-specific findings tables in each retrospective for
+  transferable insights
 
 The loop runs until the human interrupts you, period.
 
 As an example use case, a user might leave you running while they sleep.
-Each round of 3-strategy backtests takes ~2-3 minutes, so you can run several
+Each round of 5-strategy backtests takes ~3-5 minutes, so you can run several
 dozen per hour. The user then wakes up to a rich multi-strategy research
 trace ready for meta-analysis.

@@ -1,0 +1,99 @@
+version: 0.4.0
+title: Multi-regime + out-of-sample + cap=5 + exit-as-design
+date_started: 2026-04-26
+date_completed: ~
+branches:
+  - v0.4.0
+
+intervention:
+  summary: |
+    Four structural improvements on top of v0.3.x's validated paradigm suite:
+
+    (1) Multi-regime backtesting: extend timerange to 2021-01-01 → 2026-01-29,
+        covering the 2021 bull, 2022 bear, and 2023-2025 bull. All v0.3.x
+        strategies were only tested in 2023-2025. This is the single most
+        important open question from all four v0.3.x retrospectives.
+
+    (2) Out-of-sample validation: train on 2023-01-01 → 2024-12-31, validate
+        on 2025-01-01 → 2026-01-29. All v0.3.x tuning used the full timerange
+        for both iteration and evaluation. A simple train/test split prevents
+        overfitting without requiring walk-forward complexity.
+
+    (3) Cap=5: raise the hard cap from 3 to 5 active strategies. v0.3.x
+        validated 4 distinct paradigms (cross-pair-primary, momentum,
+        mean-reversion, volatility-breakout) but cap=3 prevented all four
+        from coexisting. cap=5 allows all validated paradigms plus one
+        experimental slot.
+
+    (4) Exit mechanism as first-class design object: v0.3.1's clearest
+        finding was that exit mechanisms are paradigm-specific — the same
+        dual-exit pattern lifted cross-pair-primary (+0.02 Sharpe) but
+        destroyed momentum (-0.29 Sharpe). v0.4.0 requires each strategy
+        to declare its exit logic as a primary design decision, with
+        explicit rationale linking exit mechanism to paradigm.
+  vs_v0_3_x: |
+    v0.3.0 (3 runs, 178 rounds) + v0.3.1 (1 run, 19 rounds) validated 4
+    distinct paradigms, injected buy-and-hold benchmark, and established
+    that asset × paradigm interaction dominates aggregate tuning.
+
+    Four structural gaps remain:
+    1. All runs used 2023-2025 only — no bear market tested.
+    2. All tuning used the full timerange — no out-of-sample validation.
+    3. Cap=3 prevented all 4 validated paradigms from coexisting.
+    4. Exit mechanisms were discovered as paradigm-specific but not
+       elevated to a first-class design concern.
+
+    v0.4.0 addresses all four simultaneously.
+
+asset:
+  pairs: [BTC/USDT, ETH/USDT, SOL/USDT, BNB/USDT, AVAX/USDT]
+  timeframes_base: 1h
+  timeframes_informative: [4h, 1d]
+  timerange_train: 20230101-20241231
+  timerange_test: 20250101-20260129
+  timerange_full: 20210101-20260129  # multi-regime: 2021 bull + 2022 bear + 2023-2025 bull
+  exchange: binance
+
+planned_improvements:
+  - id: multi-regime
+    title: Multi-regime backtesting (bear + bull)
+    status: planned
+    rationale: |
+      All four v0.3.x runs used 2023-2025 only — a nearly uninterrupted bull.
+      No strategy has been tested in a bear market. The most critical open
+      question: do cross-pair primary signals survive when BTC breakouts fail?
+      Does momentum collapse in trend reversals? Does mean-reversion improve
+      in bear markets? Extending to 2021-2025 covers one full cycle.
+    scope: data download (prepare.py) + timerange extension in run.py
+
+  - id: out-of-sample
+    title: Train/test split validation
+    status: planned
+    rationale: |
+      Train on 2023-2024, test on 2025-2026 Q1. The experiment loop uses the
+      train period for all iteration. After the loop concludes, strategies are
+      validated once on the held-out test period. This is the simplest form
+      of out-of-sample validation — no walk-forward complexity needed.
+    scope: run.py timerange override mechanism + final validation step
+
+  - id: cap-5
+    title: Raise hard cap from 3 to 5 active strategies
+    status: planned
+    rationale: |
+      v0.3.x validated 4 distinct paradigms: cross-pair-primary, momentum,
+      mean-reversion, and volatility-breakout. cap=3 prevented all four from
+      coexisting, and fork was used only once across 197 rounds. cap=5 allows
+      all validated paradigms to form a permanent portfolio plus one slot for
+      experimental strategies.
+    scope: program.md rule change + config.json max_open_trades → 5 (already 5)
+
+  - id: exit-as-design
+    title: Exit mechanism as first-class design object
+    status: planned
+    rationale: |
+      v0.3.1's clearest finding: exit mechanisms are paradigm-specific.
+      Dual exit (EMA+ROC) lifted BTCLeaderBreakout 0.88→0.91 but destroyed
+      MomentumMTF 0.83→0.54. v0.4.0 requires each strategy to declare its
+      exit logic as a primary design decision with explicit paradigm-exit
+      rationale, rather than treating exit as a post-hoc tuning parameter.
+    scope: strategy design methodology (no code changes required)
