@@ -57,7 +57,7 @@ class RangeBreakout(IStrategy):
         return dataframe
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe["ema12"] = ta.EMA(dataframe, timeperiod=12)
+        dataframe["ema10"] = ta.EMA(dataframe, timeperiod=10)
         dataframe["roc"] = ta.ROC(dataframe, timeperiod=12)
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         dataframe["prior_high_48"] = dataframe["high"].rolling(48).max().shift(1)
@@ -102,7 +102,7 @@ class RangeBreakout(IStrategy):
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
-            (dataframe["close"] < dataframe["ema12"])
+            (dataframe["close"] < dataframe["ema10"])
             | (dataframe["roc"] < -2.5),
             "exit_long",
         ] = 1
