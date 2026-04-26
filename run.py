@@ -1,5 +1,5 @@
 """
-run.py — The oracle. Part of the evaluation contract.
+run.py — READ-ONLY. The oracle. Do not modify.
 
 Discovers every `.py` file in `user_data/strategies/` (except those starting
 with `_`), runs FreqTrade's Backtesting in-process for each, and prints one
