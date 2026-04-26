@@ -84,7 +84,7 @@ class RangeBreakout(IStrategy):
             & (dataframe["btc_usdt_close_1h"] > dataframe["btc_usdt_ema50_1h"])
             & (dataframe["close"] > breakout_level)
             & (dataframe["rsi"] > 54)
-            & (dataframe["rsi"] < 70)
+            & (dataframe["rsi"] < 72)
             & (dataframe["roc"] > 2.0)
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
         )
