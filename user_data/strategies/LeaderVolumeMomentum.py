@@ -41,7 +41,7 @@ class LeaderVolumeMomentum(IStrategy):
     @informative("4h")
     def populate_indicators_4h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["ema9"] = ta.EMA(dataframe, timeperiod=9)
-        dataframe["ema21"] = ta.EMA(dataframe, timeperiod=20)
+        dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         return dataframe
 
