@@ -86,7 +86,13 @@ class RangeBreakout(IStrategy):
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
         )
 
-        if metadata.get("pair") in ("ETH/USDT", "BNB/USDT"):
+        if metadata.get("pair") == "ETH/USDT":
+            entry_condition &= (
+                (dataframe["close"] > dataframe["prior_high_96"])
+                & (dataframe["volume"] > dataframe["vol_ma"] * 1.5)
+            )
+
+        if metadata.get("pair") == "BNB/USDT":
             entry_condition &= False
 
         dataframe.loc[entry_condition, "enter_long"] = 1
