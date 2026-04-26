@@ -67,7 +67,7 @@ class MeanRevRegime(IStrategy):
             (dataframe["close"] > dataframe["ema200_1d"])
             & (dataframe["rsi_4h"] < 40)
             & (dataframe["btc_usdt_rsi_1h"] < 40)
-            & (dataframe["rsi"] < 30)
+            & (dataframe["rsi"] < 28)
             & (dataframe["close"] < dataframe["bb_lower"])
             & (dataframe["volume"] > dataframe["vol_ma"] * 2.0)
         )
