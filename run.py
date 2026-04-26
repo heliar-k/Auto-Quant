@@ -1,10 +1,11 @@
 """
-run.py — READ-ONLY. The oracle. Do not modify.
+run.py — The oracle. Part of the evaluation contract.
 
 Discovers every `.py` file in `user_data/strategies/` (except those starting
 with `_`), runs FreqTrade's Backtesting in-process for each, and prints one
 `---` summary block per strategy to stdout. Each block contains the
 portfolio aggregate metrics plus a per-pair breakdown (5 pairs as of v0.3.0).
+A `__benchmark__` block shows buy-and-hold returns for comparison.
 
 The agent reads these blocks to decide keep/evolve/fork/kill actions on each
 strategy. Per-pair metrics let the agent see which paradigms work on which
@@ -15,13 +16,15 @@ A single strategy's crash produces an error block for that strategy but
 does NOT abort the others.
 
 Usage:
-    uv run run.py > run.log 2>&1
+    uv run run.py > run.log 2>&1                         # default (train) timerange
+    uv run run.py --timerange 20250101-20260129 > run.log # override timerange
     grep "^---\\|^strategy:\\|^sharpe:\\|^trade_count:" run.log  # compact scan
     awk '/^---$/,/^$/' run.log                                   # full block incl per-pair
 """
 
 from __future__ import annotations
 
+import argparse
 import subprocess
 import sys
 import traceback
@@ -33,13 +36,14 @@ from freqtrade.enums import RunMode
 from freqtrade.optimize.backtesting import Backtesting
 
 # ---------------------------------------------------------------------------
-# Fixed constants. Do not modify.
+# Constants — train timerange is the default for the experiment loop.
+# Override with --timerange for test or full-regime evaluation.
 # ---------------------------------------------------------------------------
 PROJECT_DIR = Path(__file__).parent.resolve()
 USER_DATA = PROJECT_DIR / "user_data"
 STRATEGIES_DIR = USER_DATA / "strategies"
 CONFIG = PROJECT_DIR / "config.json"
-TIMERANGE = "20230101-20251231"
+TIMERANGE_DEFAULT = "20230101-20241231"  # train period
 PAIRS = ["BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "AVAX/USDT"]
 PAIRS_STR = ",".join(PAIRS)
 
@@ -70,14 +74,14 @@ def discover_strategies() -> list[str]:
     return names
 
 
-def run_backtest(strategy_name: str) -> dict[str, Any]:
+def run_backtest(strategy_name: str, timerange: str) -> dict[str, Any]:
     args = {
         "config": [str(CONFIG)],
         "user_data_dir": str(USER_DATA),
         "datadir": str(USER_DATA / "data"),
         "strategy": strategy_name,
         "strategy_path": str(STRATEGIES_DIR),
-        "timerange": TIMERANGE,
+        "timerange": timerange,
         "export": "none",
         "exportfilename": None,
         "cache": "none",
@@ -149,13 +153,94 @@ def extract_metrics(results: dict[str, Any], strategy_name: str) -> dict[str, An
     return {"aggregate": aggregate, "per_pair": per_pair}
 
 
-def print_summary(strategy_name: str, commit: str, bundle: dict[str, Any]) -> None:
+def compute_benchmark(timerange: str) -> dict[str, Any]:
+    """Buy-and-hold benchmark for each pair and equal-weight portfolio."""
+    import pandas as pd
+
+    start_str = timerange[:8]
+    end_str = timerange[9:17]
+    start_ts = pd.Timestamp(
+        f"{start_str[:4]}-{start_str[4:6]}-{start_str[6:8]}", tz="UTC"
+    )
+    end_ts = pd.Timestamp(
+        f"{end_str[:4]}-{end_str[4:6]}-{end_str[6:8]}", tz="UTC"
+    ) + pd.Timedelta(days=1)
+
+    per_pair: dict[str, dict[str, float]] = {}
+    for pair in PAIRS:
+        pair_slug = pair.replace("/", "_")
+        feather_path = USER_DATA / "data" / f"{pair_slug}-1h.feather"
+        if not feather_path.exists():
+            continue
+        df = pd.read_feather(feather_path)
+        if df["date"].dt.tz is None:
+            df["date"] = df["date"].dt.tz_localize("UTC")
+        mask = (df["date"] >= start_ts) & (df["date"] < end_ts)
+        close = df.loc[mask, "close"].values
+        if len(close) == 0:
+            continue
+        start_price = float(close[0])
+        end_price = float(close[-1])
+        profit_pct = (end_price - start_price) / start_price * 100
+
+        peak = float(close[0])
+        max_dd = 0.0
+        for price in close:
+            p = float(price)
+            if p > peak:
+                peak = p
+            dd = (p - peak) / peak * 100
+            if dd < max_dd:
+                max_dd = dd
+
+        per_pair[pair] = {
+            "profit_pct": round(profit_pct, 2),
+            "max_dd_pct": round(max_dd, 2),
+        }
+
+    if per_pair:
+        avg_profit = sum(v["profit_pct"] for v in per_pair.values()) / len(per_pair)
+        avg_dd = sum(v["max_dd_pct"] for v in per_pair.values()) / len(per_pair)
+    else:
+        avg_profit = 0.0
+        avg_dd = 0.0
+
+    return {
+        "per_pair": per_pair,
+        "equal_weight": {
+            "profit_pct": round(avg_profit, 2),
+            "max_dd_pct": round(avg_dd, 2),
+        },
+    }
+
+
+def print_benchmark(bench: dict[str, Any], timerange: str) -> None:
+    ew = bench["equal_weight"]
+    print("---")
+    print("strategy:                __benchmark__")
+    print("type:                    buy-and-hold")
+    print(f"timerange:               {timerange}")
+    print(f"equal_weight_profit_pct: {ew['profit_pct']:.2f}")
+    print(f"equal_weight_dd_pct:     {ew['max_dd_pct']:.2f}")
+    print("per_pair:")
+    for pair in PAIRS:
+        m = bench["per_pair"].get(pair)
+        if m is None:
+            print(f"  {pair}: (no data)")
+            continue
+        print(
+            f"  {pair}: profit_pct={m['profit_pct']:.2f} "
+            f"dd_pct={m['max_dd_pct']:.2f}"
+        )
+
+
+def print_summary(strategy_name: str, commit: str, bundle: dict[str, Any], timerange: str) -> None:
     agg = bundle["aggregate"]
     per_pair = bundle["per_pair"]
     print("---")
     print(f"strategy:         {strategy_name}")
     print(f"commit:           {commit}")
-    print(f"timerange:        {TIMERANGE}")
+    print(f"timerange:        {timerange}")
     print(f"sharpe:           {agg['sharpe']:.4f}")
     print(f"sortino:          {agg['sortino']:.4f}")
     print(f"calmar:           {agg['calmar']:.4f}")
@@ -193,6 +278,17 @@ def print_error(strategy_name: str, commit: str, err: BaseException) -> None:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="Batch backtest all strategies in user_data/strategies/",
+    )
+    parser.add_argument(
+        "--timerange",
+        default=TIMERANGE_DEFAULT,
+        help=f"Timerange override (default: {TIMERANGE_DEFAULT})",
+    )
+    args = parser.parse_args()
+    timerange: str = args.timerange
+
     strategies = discover_strategies()
     if not strategies:
         print(
@@ -205,21 +301,29 @@ def main() -> int:
 
     commit = get_commit()
     print(f"Discovered {len(strategies)} strategies: {', '.join(strategies)}")
-    print(f"Timerange: {TIMERANGE}  Pairs: {PAIRS_STR}")
+    print(f"Timerange: {timerange}  Pairs: {PAIRS_STR}")
     print()
 
     n_ok = 0
     n_err = 0
     for name in strategies:
         try:
-            results = run_backtest(name)
+            results = run_backtest(name, timerange)
             bundle = extract_metrics(results, name)
-            print_summary(name, commit, bundle)
+            print_summary(name, commit, bundle, timerange)
             n_ok += 1
         except BaseException as err:  # catch everything incl. SystemExit
             print_error(name, commit, err)
             n_err += 1
         print()  # blank line between strategy blocks
+
+    # Benchmark
+    try:
+        bench = compute_benchmark(timerange)
+        print_benchmark(bench, timerange)
+        print()
+    except Exception as e:
+        print(f"(benchmark unavailable: {e})", file=sys.stderr)
 
     print(f"Done: {n_ok} succeeded, {n_err} failed.")
     return 0 if n_err == 0 else 1
