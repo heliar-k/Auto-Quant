@@ -11,7 +11,7 @@ Parent: root
 Created: e772907
 Status: active
 Uses MTF: yes (1d EMA50, 4h RSI, cross-pair BTC RSI)
-Exit Mechanism: RSI>64 AND close>BB_mid (earlier conditional mean-reversion completion)
+Exit Mechanism: RSI>66 AND close>BB_mid (conditional mean-reversion completion)
 Exit Rationale: mean reversion completes when price returns to the distribution
 center; RSI confirms the momentum shift is underway, and BB_mid prevents exiting
 on noise spikes before the reversion has actually materialized
@@ -95,7 +95,7 @@ class PanicReboundMTF(IStrategy):
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
-            (dataframe["rsi"] > 64)
+            (dataframe["rsi"] > 66)
             & (dataframe["close"] > dataframe["bb_mid"]),
             "exit_long",
         ] = 1
