@@ -67,8 +67,8 @@ class TrendMtfRegime(IStrategy):
             & (dataframe["btc_usdt_rsi_1h"] > 42)
             & (dataframe["btc_usdt_close_1h"] > dataframe["btc_usdt_ema50_1h"])
             & (dataframe["close"] > dataframe["ema50"])
-            & (dataframe["rsi"] > 28)
-            & (dataframe["rsi"] < 52)
+            & (dataframe["rsi"] > 30)
+            & (dataframe["rsi"] < 50)
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.15)
         )
 
