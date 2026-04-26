@@ -69,7 +69,7 @@ class MeanRevRegime(IStrategy):
             & (dataframe["btc_usdt_rsi_1h"] < 40)
             & (dataframe["rsi"] < 28)
             & (dataframe["close"] < dataframe["bb_lower"])
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.5)
+            & (dataframe["volume"] > dataframe["vol_ma"] * 2.0)
         )
 
         if metadata.get("pair") in ("SOL/USDT", "AVAX/USDT"):

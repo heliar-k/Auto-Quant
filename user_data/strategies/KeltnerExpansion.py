@@ -96,7 +96,14 @@ class KeltnerExpansion(IStrategy):
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.10)
         )
 
-        if metadata.get("pair") in ("SOL/USDT", "BNB/USDT"):
+        if metadata.get("pair") == "BNB/USDT":
+            entry_condition &= (
+                (dataframe["close"] > dataframe["prior_high_96"])
+                & (dataframe["volume"] > dataframe["vol_ma"] * 1.5)
+                & (dataframe["roc"] > 5.0)
+            )
+
+        if metadata.get("pair") == "SOL/USDT":
             entry_condition &= False
 
         dataframe.loc[entry_condition, "enter_long"] = 1
