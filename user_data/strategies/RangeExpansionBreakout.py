@@ -91,7 +91,6 @@ class RangeExpansionBreakout(IStrategy):
             (dataframe["close"] > dataframe["ema100_1d"])
             & (dataframe["ema9_4h"] > dataframe["ema34_4h"])
             & (dataframe["btc_usdt_roc_1h"] > 2.0)
-            & (dataframe["btc_usdt_rsi_1h"] > 50)
             & was_compressed
             & is_expanding
             & (dataframe["close"] > breakout_level)

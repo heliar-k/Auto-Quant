@@ -59,12 +59,20 @@ class TrendMtfConfluence(IStrategy):
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        rsi_lo = 30
+        rsi_hi = 52
+
+        if metadata.get("pair") == "ETH/USDT":
+            rsi_hi = 42
+        if metadata.get("pair") == "AVAX/USDT":
+            rsi_hi = 45
+
         entry_condition = (
             (dataframe["close"] > dataframe["ema200_1d"])
             & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & (dataframe["close"] > dataframe["ema50"])
-            & (dataframe["rsi"] >= 30)
-            & (dataframe["rsi"] <= 52)
+            & (dataframe["rsi"] >= rsi_lo)
+            & (dataframe["rsi"] <= rsi_hi)
         )
 
         dataframe.loc[entry_condition, "enter_long"] = 1

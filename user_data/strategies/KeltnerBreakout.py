@@ -8,7 +8,7 @@ When price breaks above the upper Keltner band with 4h trend alignment, it signa
 genuine directional expansion rather than volatility noise. The ATR midline exit
 captures the momentum burst without waiting for full trend exhaustion.
 Parent: root
-Created: TBD
+Created: 5799a6f
 Status: active
 Uses MTF: yes (4h EMA trend, 1d EMA200 regime)
 Exit Mechanism: close < EMA20 (Keltner midline break)
@@ -54,8 +54,8 @@ class KeltnerBreakout(IStrategy):
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["ema20"] = ta.EMA(dataframe, timeperiod=20)
         atr = ta.ATR(dataframe, timeperiod=10)
-        dataframe["kc_upper"] = dataframe["ema20"] + 2.0 * atr
-        dataframe["kc_lower"] = dataframe["ema20"] - 2.0 * atr
+        dataframe["kc_upper"] = dataframe["ema20"] + 2.5 * atr
+        dataframe["kc_lower"] = dataframe["ema20"] - 2.5 * atr
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         dataframe["roc"] = ta.ROC(dataframe, timeperiod=10)
         dataframe["vol_ma"] = dataframe["volume"].rolling(20).mean()
@@ -66,14 +66,14 @@ class KeltnerBreakout(IStrategy):
             (dataframe["close"] > dataframe["ema200_1d"])
             & (dataframe["ema9_4h"] > dataframe["ema21_4h"])
             & (dataframe["close"] > dataframe["kc_upper"])
-            & (dataframe["roc"] > 2.0)
-            & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
+            & (dataframe["roc"] > 4.0)
+            & (dataframe["volume"] > dataframe["vol_ma"] * 1.5)
         )
 
         if metadata.get("pair") == "BNB/USDT":
             entry_condition &= (
-                (dataframe["roc"] > 4.0)
-                & (dataframe["volume"] > dataframe["vol_ma"] * 1.5)
+                (dataframe["roc"] > 6.0)
+                & (dataframe["volume"] > dataframe["vol_ma"] * 2.0)
             )
 
         dataframe.loc[entry_condition, "enter_long"] = 1
