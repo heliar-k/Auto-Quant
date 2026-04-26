@@ -68,6 +68,7 @@ class MomentumMTF(IStrategy):
 
         if metadata.get("pair") == "ETH/USDT":
             entry_condition &= dataframe["roc"] > 7.0
+            entry_condition &= dataframe["volume"] > dataframe["vol_ma"] * 1.5
 
         if metadata.get("pair") == "AVAX/USDT":
             entry_condition &= dataframe["roc"] > 7.0
