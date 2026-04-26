@@ -1,0 +1,301 @@
+commit	event	strategy_name	sharpe	max_dd	note
+18b9e2a	create	LeaderVolumeMomentum	0.2813	-6.70	Round 1 root momentum baseline. Good clean DD and pf 1.58, but only 99 trades and pair edge is AVAX/SOL-heavy; BTC flat, BNB negative with 4 trades. Need improve sample balance without adding noise.
+18b9e2a	create	PanicReboundMTF	0.3127	-18.90	Round 1 root MTF mean-reversion baseline. Best initial Sharpe; 237 trades, 63% wr, pf 1.23. BNB/SOL strongest, AVAX negative. Hypothesis works broadly but DD too high and AVAX is weak link.
+18b9e2a	create	RangeExpansionBreakout	0.2004	-11.65	Round 1 root volatility breakout baseline. Positive aggregate with 309 trades; BTC/ETH/SOL positive, BNB/AVAX negative. Breakout paradigm viable but needs pair/noise filtering.
+818c931	stable	LeaderVolumeMomentum	0.2813	-6.70	Stable while testing breakout BTC confirmation. Still low-DD positive but thin sample, especially BNB.
+818c931	stable	PanicReboundMTF	0.3127	-18.90	Stable while testing breakout. Still best raw Sharpe among untouched baselines but AVAX remains negative and DD high.
+818c931	evolve	RangeExpansionBreakout	0.3201	-3.97	Added BTC ROC>2 and RSI>50 confirmation. Strong improvement: Sharpe 0.20→0.32, DD -11.7→-4.0, trades 309→168, AVAX flips positive. BNB worsens (-0.21, pf 0.21), so leader confirmation helps except BNB.
+bf1c985	stable	LeaderVolumeMomentum	0.2813	-6.70	Stable. 2nd consecutive stable; needs evolution soon to address thin sample/BNB inactivity.
+bf1c985	evolve	PanicReboundMTF	0.3323	-18.75	Tightened BTC RSI 42→40. Modest improvement: Sharpe 0.313→0.332, AVAX loss shrinks -4.0%→-2.0%, pf 1.23→1.25. Kept; stricter market panic helps without starving trades.
+bf1c985	stable	RangeExpansionBreakout	0.3201	-3.97	Stable after round-2 improvement. BNB remains negative but overall low-DD profile is attractive.
+fc746bc	evolve	LeaderVolumeMomentum	0.2760	-7.25	DISCARDED (reset): relaxed volume threshold 1.05×→1.0×. Trades 99→103 but Sharpe 0.281→0.276 and DD worsened. Extra trades are noise; revert to stricter volume.
+fc746bc	stable	PanicReboundMTF	0.3323	-18.75	Stable during discarded momentum test.
+fc746bc	stable	RangeExpansionBreakout	0.3201	-3.97	Stable during discarded momentum test.
+7264d7d	stable	LeaderVolumeMomentum	0.2813	-6.70	Stable after reverting discarded volume relaxation. Still needs a better way to improve BNB/sample without adding noisy trades.
+7264d7d	stable	PanicReboundMTF	0.3323	-18.75	Stable. 2nd consecutive since BTC RSI improvement; DD/AVAX still next target.
+7264d7d	evolve	RangeExpansionBreakout	0.3318	-3.97	Added BNB-only stricter ROC>5 and volume>1.35 gate. Small but real improvement: Sharpe 0.320→0.332, profit 14.65→15.63, BNB trades 21→11 and loss shrinks. Keep; BNB needs stronger expansion.
+acb75dc	stable	LeaderVolumeMomentum	0.2813	-6.70	Stable during discarded mean-reversion test.
+acb75dc	evolve	PanicReboundMTF	0.2157	-21.09	DISCARDED (reset): tightened 4h RSI 50→45. Sharpe collapsed 0.332→0.216 and DD worsened; AVAX got worse. Too restrictive and selects worse late-panic trades.
+acb75dc	stable	RangeExpansionBreakout	0.3318	-3.97	Stable during discarded mean-reversion test.
+30a6c3c	evolve	LeaderVolumeMomentum	0.3971	-7.50	Removed EMA50 exit, leaving ROC<-2 exit only. Big improvement: Sharpe 0.281→0.397, profit 21.5→35.0, pf 1.58→1.96. DD only slightly worse. Momentum winners need room; EMA50 exit cut SOL trend payoff.
+30a6c3c	stable	PanicReboundMTF	0.3323	-18.75	Stable. Still positive but now trails momentum; AVAX/DD remain concerns.
+30a6c3c	stable	RangeExpansionBreakout	0.3318	-3.97	Stable. 2nd consecutive stable after BNB gate; consider further BNB treatment.
+4b11cd6	stable	LeaderVolumeMomentum	0.3971	-7.50	Stable at new momentum peak.
+4b11cd6	stable	PanicReboundMTF	0.3323	-18.75	Stable. 2nd consecutive; AVAX/DD treatment needed next.
+4b11cd6	evolve	RangeExpansionBreakout	0.3547	-3.97	Tightened BNB-only gate to ROC>7 and volume>1.6. Sharpe 0.332→0.355, profit 15.6→17.1. BNB now only 2 trades, both bad, but aggregate improved. BNB likely unsuitable for this breakout signal.
+4a1c091	stable	LeaderVolumeMomentum	0.3971	-7.50	Stable during discarded AVAX mean-reversion test.
+4a1c091	evolve	PanicReboundMTF	0.3143	-17.59	DISCARDED (reset): AVAX-only RSI<28 and BTC RSI<36 gate reduced DD but Sharpe 0.332→0.314 and profit fell. AVAX remained negative with worse profit. Pair-specific AVAX tightening is not enough.
+4a1c091	stable	RangeExpansionBreakout	0.3547	-3.97	Stable during discarded AVAX mean-reversion test.
+1daa56d	stable	LeaderVolumeMomentum	0.3971	-7.50	Stable. 3rd consecutive; must evolve/fork/kill next round.
+1daa56d	stable	PanicReboundMTF	0.3323	-18.75	Stable at current mean-reversion best after AVAX gate reset.
+1daa56d	evolve	RangeExpansionBreakout	0.4075	-3.97	Disabled BNB entries after repeated negative BNB breakout evidence. Breakthrough: Sharpe 0.355→0.408, profit 17.1→19.7, pf 1.46→1.56. Per-asset profile: breakout works on BTC/ETH/SOL/AVAX, not BNB.
+c93b34e	evolve	LeaderVolumeMomentum	0.3983	-7.50	Disabled BNB entries after 3-stable gate. Small improvement: Sharpe 0.397→0.398, profit 35.0→35.8, pf 1.96→2.01. BNB contributes nothing to this momentum signal; keep exclusion.
+c93b34e	stable	PanicReboundMTF	0.3323	-18.75	Stable. 2nd consecutive after AVAX gate reset; must address next.
+c93b34e	stable	RangeExpansionBreakout	0.4075	-3.97	Stable at breakout peak after BNB exclusion.
+a2ebb2c	stable	LeaderVolumeMomentum	0.3983	-7.50	Stable at momentum peak after BNB exclusion.
+a2ebb2c	evolve	PanicReboundMTF	0.3636	-14.14	Disabled AVAX entries. Strong improvement: Sharpe 0.332→0.364, DD -18.75→-14.14, profit 20.7→23.0, pf 1.25→1.31. Per-asset profile: panic mean-reversion works on BTC/ETH/SOL/BNB, not AVAX.
+a2ebb2c	stable	RangeExpansionBreakout	0.4075	-3.97	Stable. 2nd consecutive after BNB exclusion; evolve next.
+45bef42	stable	LeaderVolumeMomentum	0.3983	-7.50	Stable. 2nd consecutive after BNB exclusion; evolve next.
+45bef42	stable	PanicReboundMTF	0.3636	-14.14	Stable at AVAX-excluded mean-reversion peak.
+45bef42	evolve	RangeExpansionBreakout	0.3932	-3.97	DISCARDED (reset): removed RSI>82 exit. Sharpe 0.408→0.393; ETH improved but AVAX collapsed 6.35%→1.36%. Overbought exit protects AVAX breakout profits; keep original exit.
+17df9d2	evolve	LeaderVolumeMomentum	0.5266	-8.45	Removed 4h RSI<75 guard. Breakthrough: Sharpe 0.398→0.527, profit 35.8→47.2, trades 94→117. BTC/ETH samples improved materially; overbought guard was blocking valid trend-continuation entries.
+17df9d2	stable	PanicReboundMTF	0.3636	-14.14	Stable. 2nd consecutive; evolve next.
+17df9d2	stable	RangeExpansionBreakout	0.4075	-3.97	Stable after restoring RSI>82 exit.
+d4e90f3	stable	LeaderVolumeMomentum	0.5266	-8.45	Stable at all-strategy peak.
+d4e90f3	evolve	PanicReboundMTF	0.3666	-12.87	Raised exit RSI 64→65. Small improvement: Sharpe 0.364→0.367 and DD -14.1→-12.9, though profit slipped slightly. Kept for better risk profile; BNB mean-reversion strengthened further.
+d4e90f3	stable	RangeExpansionBreakout	0.4075	-3.97	Stable. 2nd consecutive; evolve next.
+a6e1f67	stable	LeaderVolumeMomentum	0.5266	-8.45	Stable at all-strategy peak. 2nd consecutive.
+a6e1f67	stable	PanicReboundMTF	0.3666	-12.87	Stable at current mean-reversion peak.
+a6e1f67	evolve	RangeExpansionBreakout	0.3524	-3.97	DISCARDED (reset): volume threshold 1.15×→1.25×. Sharpe 0.408→0.352, profit 19.7→16.7; SOL suffered. Breakout needs moderate, not extreme, volume expansion.
+1ac8bfb	evolve	LeaderVolumeMomentum	0.4221	-5.96	DISCARDED (reset): own ROC 7→8. DD improved but Sharpe 0.527→0.422 and profit 47.2→37.6. Over-filtered SOL/AVAX winners; ROC 7 remains sweet spot.
+1ac8bfb	stable	PanicReboundMTF	0.3666	-12.87	Stable. 2nd consecutive; evolve next.
+1ac8bfb	stable	RangeExpansionBreakout	0.4075	-3.97	Stable at breakout peak.
+a6e9b80	stable	LeaderVolumeMomentum	0.5266	-8.45	Stable at all-strategy peak.
+a6e9b80	evolve	PanicReboundMTF	0.3661	-12.19	Raised exit RSI 65→66. Sharpe flat/slightly lower (0.3666→0.3661) but profit 22.5→25.7 and DD -12.9→-12.2. Kept as better risk/profit profile; BNB and BTC improve, SOL weakens.
+a6e9b80	stable	RangeExpansionBreakout	0.4075	-3.97	Stable. 2nd consecutive since discarded volume test; evolve next.
+478a29c	stable	LeaderVolumeMomentum	0.5266	-8.45	Stable. 2nd consecutive after ROC discard; evolve next.
+478a29c	stable	PanicReboundMTF	0.3661	-12.19	Stable at RSI66 profile.
+478a29c	evolve	RangeExpansionBreakout	0.4126	-3.97	Lengthened breakout lookback 48h→72h. Small improvement: Sharpe 0.408→0.413, profit 19.7→20.1, trades 147→145. Longer range filters a little noise; keep.
+c29d932	evolve	LeaderVolumeMomentum	0.4533	-7.60	DISCARDED (reset): loosened BTC ROC 4→3. Trades 117→148 but Sharpe 0.527→0.453 and pf 2.09→1.65. BTC ROC 4 is needed; looser leader gate admits noisy follower moves.
+c29d932	stable	PanicReboundMTF	0.3661	-12.19	Stable. 2nd consecutive; SOL weakness needs treatment.
+c29d932	stable	RangeExpansionBreakout	0.4126	-3.97	Stable at 72h breakout peak.
+610ee9a	stable	LeaderVolumeMomentum	0.5266	-8.45	Stable at all-strategy peak.
+610ee9a	evolve	PanicReboundMTF	0.4698	-6.25	Disabled SOL entries (AVAX already disabled). Breakthrough: Sharpe 0.366→0.470, DD -12.2→-6.25, pf 1.32→1.57. Mean-reversion edge is BTC/ETH/BNB only; SOL/AVAX are drawdown traps.
+610ee9a	stable	RangeExpansionBreakout	0.4126	-3.97	Stable. 2nd consecutive; evolve next.
+c5c82a9	stable	LeaderVolumeMomentum	0.5266	-8.45	Stable. 2nd consecutive; evolve next.
+c5c82a9	stable	PanicReboundMTF	0.4698	-6.25	Stable at mean-reversion peak.
+c5c82a9	evolve	RangeExpansionBreakout	0.4100	-3.97	DISCARDED (reset): prior-high 72h→96h. Nearly flat but Sharpe/profit slightly worse and SOL weaker. 72h remains the better aggregate breakout window.
+bc03292	evolve	LeaderVolumeMomentum	0.4701	-7.41	DISCARDED (reset): volume threshold 1.05×→1.15×. Sharpe 0.527→0.470, profit 47.2→41.5. Stricter volume cuts valid BTC/ETH/AVAX momentum. 1.05× remains best.
+bc03292	stable	PanicReboundMTF	0.4698	-6.25	Stable. 2nd consecutive; evolve next.
+bc03292	stable	RangeExpansionBreakout	0.4126	-3.97	Stable at 72h breakout peak.
+2e29161	stable	LeaderVolumeMomentum	0.5266	-8.45	Stable at all-strategy peak.
+2e29161	evolve	PanicReboundMTF	0.4304	-5.29	DISCARDED (reset): disabled ETH, leaving BTC/BNB only. DD and pf improved, but Sharpe 0.470→0.430 and profit 25.1→19.4. ETH is weak but still diversifying/positive; keep ETH.
+2e29161	stable	RangeExpansionBreakout	0.4126	-3.97	Stable. 2nd consecutive; evolve next.
+cf2a69c	stable	LeaderVolumeMomentum	0.5266	-8.45	Stable during discarded breakout BTC-exclusion test; per-pair profile unchanged, with SOL still the main profit engine and BNB disabled.
+cf2a69c	stable	PanicReboundMTF	0.4698	-6.25	Stable during discarded breakout BTC-exclusion test; BTC/ETH/BNB profile unchanged, BNB remains strongest and SOL/AVAX disabled.
+cf2a69c	evolve	RangeExpansionBreakout	0.3382	-3.70	DISCARDED (reset): disabled BTC entries. DD improved slightly and pf rose, but Sharpe 0.413→0.338 and profit 20.1→17.7 because BTC's 37 trades still diversify the sleeve. Keep BTC despite low standalone profit.
+edc24ae	evolve	LeaderVolumeMomentum	0.5144	-7.27	Slowed ROC exit -2→-3. Sharpe eased 0.527→0.514, but profit improved 47.2→53.9 and DD improved -8.45→-7.27; SOL/AVAX profit expanded while BTC/ETH stayed positive. Kept as a legitimate profit/DD tradeoff, not ROI clipping.
+edc24ae	stable	PanicReboundMTF	0.4698	-6.25	Stable during Leader exit test. BTC/ETH/BNB profile unchanged; BNB remains the strongest sleeve and ETH remains small positive diversification.
+edc24ae	stable	RangeExpansionBreakout	0.4126	-3.97	Stable after restoring BTC participation. BTC remains low-profit but useful for aggregate Sharpe diversification; SOL/AVAX drive most breakout edge.
+0dd2e6c	stable	LeaderVolumeMomentum	0.5144	-7.27	Stable during discarded panic exit-RSI test. Slower ROC exit profile unchanged: higher profit/DD tradeoff with SOL/AVAX leading.
+0dd2e6c	evolve	PanicReboundMTF	0.4462	-7.82	DISCARDED (reset): raised exit RSI 66→67. Sharpe fell 0.470→0.446, profit 25.1→24.3, and DD worsened -6.25→-7.82; BNB edge weakened materially despite ETH improving. RSI 66 remains preferred.
+0dd2e6c	stable	RangeExpansionBreakout	0.4126	-3.97	Stable during discarded panic exit-RSI test. Breakout profile unchanged: BTC diversifies, SOL/AVAX are primary positive sleeves, BNB disabled.
+b88d085	stable	LeaderVolumeMomentum	0.5144	-7.27	Stable during neutral breakout compression test. Higher-profit slower-exit momentum profile unchanged; BNB remains disabled.
+b88d085	stable	PanicReboundMTF	0.4698	-6.25	Stable during neutral breakout compression test. BTC/ETH/BNB mean-reversion profile unchanged after restoring RSI66 exit.
+b88d085	evolve	RangeExpansionBreakout	0.4126	-3.97	DISCARDED (reset): loosened compression threshold 0.68→0.75, but metrics and per-pair trades were identical. Condition is non-binding in this arena; keep original tighter documented threshold.
+8648c84	evolve	LeaderVolumeMomentum	0.3983	-4.54	DISCARDED (reset): tightened BTC ROC gate 4→5. DD improved, but Sharpe 0.514→0.398 and profit 53.9→40.7; stricter leader confirmation starves SOL/AVAX winners. BTC ROC 4 remains preferred.
+8648c84	stable	PanicReboundMTF	0.4698	-6.25	Stable during discarded leader BTC ROC test. BTC/ETH/BNB mean-reversion profile unchanged.
+8648c84	stable	RangeExpansionBreakout	0.4126	-3.97	Stable during discarded leader BTC ROC test. Breakout profile unchanged after restoring original compression threshold.
+ffdbdfd	stable	LeaderVolumeMomentum	0.5144	-7.27	Stable during discarded panic BTC RSI test. Slower exit profile unchanged, with SOL/AVAX still carrying most profit.
+ffdbdfd	evolve	PanicReboundMTF	0.4258	-6.79	DISCARDED (reset): tightened BTC RSI confirmation 40→38. BNB improved, but ETH collapsed (profit 4.8→1.7, DD -4.7→-6.9) and aggregate Sharpe/profit fell. BTC RSI 40 remains better balance.
+ffdbdfd	stable	RangeExpansionBreakout	0.4126	-3.97	Stable during discarded panic BTC RSI test. Breakout profile unchanged.
+7239588	stable	LeaderVolumeMomentum	0.5144	-7.27	Stable during discarded stricter breakout-compression test. Momentum profile unchanged.
+7239588	stable	PanicReboundMTF	0.4698	-6.25	Stable during discarded stricter breakout-compression test. Mean-reversion profile unchanged.
+7239588	evolve	RangeExpansionBreakout	0.4030	-4.25	DISCARDED (reset): tightened compression threshold 0.68→0.60. Trade count stayed 145 but Sharpe/profit/DD all worsened slightly; 0.68 remains preferred and compression bracket is now bounded.
+1fe6860	evolve	LeaderVolumeMomentum	0.6169	-7.62	Slowed ROC exit -3→-4. Major improvement: Sharpe 0.514→0.617, profit 53.9→88.9, pf 2.10→2.51 with DD still controlled. ETH/SOL/AVAX all expanded strongly; no ROI/exit_profit Goodhart mechanism.
+1fe6860	stable	PanicReboundMTF	0.4698	-6.25	Stable during Leader ROC -4 exit test. Mean-reversion profile unchanged; BNB remains strongest.
+1fe6860	stable	RangeExpansionBreakout	0.4126	-3.97	Stable during Leader ROC -4 exit test. Breakout profile unchanged after compression bracket reset.
+0e3c19e	stable	LeaderVolumeMomentum	0.6169	-7.62	Stable at new momentum peak during ETH-specific panic gate test. ETH/SOL/AVAX all strong under ROC<-4 exit.
+0e3c19e	evolve	PanicReboundMTF	0.5029	-6.20	Added ETH-only local RSI<30 gate. Improvement: Sharpe 0.470→0.503, profit 25.1→27.5, pf 1.57→1.65; ETH profit improved with fewer trades while BTC/BNB stayed intact. Kept.
+0e3c19e	stable	RangeExpansionBreakout	0.4126	-3.97	Stable during ETH-specific panic gate test. Breakout profile unchanged.
+bc96c77	stable	LeaderVolumeMomentum	0.6169	-7.62	Stable during discarded breakout RSI80 exit test. Momentum profile unchanged at new peak.
+bc96c77	stable	PanicReboundMTF	0.5029	-6.20	Stable during discarded breakout RSI80 exit test. ETH-specific gate profile unchanged.
+bc96c77	evolve	RangeExpansionBreakout	0.2418	-4.00	DISCARDED (reset): tightened RSI exit 82→80. Sharpe 0.413→0.242 and profit 20.1→10.7; earlier exits cut BTC/ETH/SOL/AVAX winners. RSI82 remains necessary.
+94e53c2	evolve	LeaderVolumeMomentum	0.5480	-7.97	DISCARDED (reset): slowed ROC exit -4→-5. Profit jumped 88.9→114.6, but Sharpe 0.617→0.548, sortino fell, and DD worsened; too patient for the risk-adjusted objective. ROC -4 remains preferred.
+94e53c2	stable	PanicReboundMTF	0.5029	-6.20	Stable during discarded Leader ROC -5 exit test. ETH-specific panic gate profile unchanged.
+94e53c2	stable	RangeExpansionBreakout	0.4126	-3.97	Stable during discarded Leader ROC -5 exit test. Breakout profile unchanged.
+1435956	stable	LeaderVolumeMomentum	0.6169	-7.62	Stable during discarded ETH RSI28 panic test. Momentum profile unchanged at ROC<-4 peak.
+1435956	evolve	PanicReboundMTF	0.4167	-5.53	DISCARDED (reset): tightened ETH-only local RSI gate 30→28. DD improved, but Sharpe 0.503→0.417 and profit 27.5→21.9 as ETH trades/profit collapsed. ETH RSI30 remains preferred.
+1435956	stable	RangeExpansionBreakout	0.4126	-3.97	Stable during discarded ETH RSI28 panic test. Breakout profile unchanged.
+86c3947	stable	LeaderVolumeMomentum	0.6169	-7.62	Stable during discarded stricter breakout-expansion test. Momentum profile unchanged.
+86c3947	stable	PanicReboundMTF	0.5029	-6.20	Stable during discarded stricter breakout-expansion test. Panic profile unchanged.
+86c3947	evolve	RangeExpansionBreakout	0.3782	-3.97	DISCARDED (reset): tightened expansion threshold 0.92→1.00. Sharpe 0.413→0.378 and profit 20.1→18.7; AVAX/BTC weakened. Current expansion threshold 0.92 remains preferred.
+bf75553	evolve	LeaderVolumeMomentum	0.6017	-6.49	DISCARDED (reset): loosened own ROC threshold 7→6. More trades and lower DD, but Sharpe 0.617→0.602 and profit 88.9→85.6; extra ETH/BTC entries dilute quality. Own ROC 7 remains preferred.
+bf75553	stable	PanicReboundMTF	0.5029	-6.20	Stable during discarded Leader own ROC test. Panic profile unchanged.
+bf75553	stable	RangeExpansionBreakout	0.4126	-3.97	Stable during discarded Leader own ROC test. Breakout profile unchanged.
+9d126e8	stable	LeaderVolumeMomentum	0.6169	-7.62	Stable during panic volume gate test. Momentum remains the top Sharpe strategy with ROC<-4 exit.
+9d126e8	evolve	PanicReboundMTF	0.5181	-6.20	Raised volume gate 0.8×→1.0×. Improvement with same trade count: Sharpe 0.503→0.518, profit 27.5→28.5, pf 1.65→1.67; all BTC/ETH/BNB sleeves improved slightly. Kept.
+9d126e8	stable	RangeExpansionBreakout	0.4126	-3.97	Stable during panic volume gate test. Breakout profile unchanged.
+2c740cc	stable	LeaderVolumeMomentum	0.6169	-7.62	Stable during discarded breakout volume-loosening test. Momentum profile unchanged.
+2c740cc	stable	PanicReboundMTF	0.5181	-6.20	Stable during discarded breakout volume-loosening test. Panic profile unchanged with volume 1.0× gate.
+2c740cc	evolve	RangeExpansionBreakout	0.3955	-3.97	DISCARDED (reset): loosened volume 1.15×→1.05×. Added only 2 trades and lowered Sharpe/profit as SOL weakened; volume 1.15× remains bracketed between too loose 1.05 and too strict 1.25.
+53cde97	evolve	LeaderVolumeMomentum	0.5329	-5.55	DISCARDED (reset): disabled BTC entries. DD/pf improved, but Sharpe 0.617→0.533 and profit 88.9→74.2; BTC's 18 trades diversify aggregate momentum despite weak standalone Sharpe. Keep BTC.
+53cde97	stable	PanicReboundMTF	0.5181	-6.20	Stable during discarded Leader BTC exclusion test. Panic profile unchanged.
+53cde97	stable	RangeExpansionBreakout	0.4126	-3.97	Stable during discarded Leader BTC exclusion test. Breakout profile unchanged.
+b2ede6b	stable	LeaderVolumeMomentum	0.6169	-7.62	Stable during stricter panic volume test. Momentum profile unchanged.
+b2ede6b	evolve	PanicReboundMTF	0.5229	-5.99	Raised volume gate 1.0×→1.15×. Slight improvement: Sharpe 0.518→0.523, profit 28.45→28.63, DD -6.20→-5.99; BNB strengthened while ETH softened. Kept.
+b2ede6b	stable	RangeExpansionBreakout	0.4126	-3.97	Stable during stricter panic volume test. Breakout profile unchanged.
+6008af8	stable	LeaderVolumeMomentum	0.6169	-7.62	Stable during AVAX-specific breakout lookback test. Momentum profile unchanged.
+6008af8	stable	PanicReboundMTF	0.5229	-5.99	Stable during AVAX-specific breakout lookback test. Panic profile unchanged with volume 1.15× gate.
+6008af8	evolve	RangeExpansionBreakout	0.4375	-3.97	Added AVAX-only 96h prior-high level while keeping 72h for BTC/ETH/SOL. Improved Sharpe 0.413→0.438 and profit 20.1→21.4; AVAX profit 6.1→7.4 with fewer trades and other sleeves unchanged. Kept.
+ab9231f	evolve	LeaderVolumeMomentum	0.6024	-7.62	DISCARDED (reset): re-enabled BNB after ROC<-4 exit improvement. BNB still lost -3.1% with pf 0.55, lowering Sharpe/profit. BNB exclusion remains valid for momentum.
+ab9231f	stable	PanicReboundMTF	0.5229	-5.99	Stable during discarded Leader BNB retest. Panic profile unchanged; BNB remains strong for mean reversion, not momentum.
+ab9231f	stable	RangeExpansionBreakout	0.4375	-3.97	Stable during discarded Leader BNB retest. Breakout profile unchanged with AVAX-only 96h lookback.
+54b3c9c	stable	LeaderVolumeMomentum	0.6169	-7.62	Stable during discarded panic volume 1.25× test. Momentum profile unchanged.
+54b3c9c	evolve	PanicReboundMTF	0.5176	-5.99	DISCARDED (reset): raised volume gate 1.15×→1.25×. BNB stayed strong, but BTC/ETH weakened and aggregate Sharpe/profit slipped. Volume 1.15× is the bracketed sweet spot.
+54b3c9c	stable	RangeExpansionBreakout	0.4375	-3.97	Stable during discarded panic volume 1.25× test. Breakout profile unchanged.
+0ccbfc8	stable	LeaderVolumeMomentum	0.6169	-7.62	Stable during neutral ETH 96h breakout lookback test. Momentum profile unchanged.
+0ccbfc8	stable	PanicReboundMTF	0.5229	-5.99	Stable during neutral ETH 96h breakout lookback test. Panic profile unchanged.
+0ccbfc8	evolve	RangeExpansionBreakout	0.4375	-3.97	DISCARDED (reset): also applied 96h prior high to ETH. Metrics/trades were identical, so ETH condition is non-binding; keep only AVAX-specific 96h for clarity.
+46c5c49	evolve	LeaderVolumeMomentum	0.6012	-7.62	DISCARDED (reset): retested volume 1.05×→1.0× after ROC<-4 exit. Sharpe/profit fell again; extra ETH/SOL/AVAX trades dilute quality. Volume 1.05× remains preferred.
+46c5c49	stable	PanicReboundMTF	0.5229	-5.99	Stable during discarded Leader volume retest. Panic profile unchanged.
+46c5c49	stable	RangeExpansionBreakout	0.4375	-3.97	Stable during discarded Leader volume retest. Breakout profile unchanged.
+472691f	stable	LeaderVolumeMomentum	0.6169	-7.62	Stable during discarded panic ETH RSI31 test. Momentum profile unchanged.
+472691f	evolve	PanicReboundMTF	0.4954	-5.86	DISCARDED (reset): loosened ETH-only RSI gate 30→31. More ETH trades weakened ETH profit/DD and aggregate Sharpe/profit; ETH RSI30 remains bracketed best.
+472691f	stable	RangeExpansionBreakout	0.4375	-3.97	Stable during discarded panic ETH RSI31 test. Breakout profile unchanged.
+3e81678	stable	LeaderVolumeMomentum	0.6169	-7.62	Stable during BTC-specific breakout lookback test. Momentum profile unchanged.
+3e81678	stable	PanicReboundMTF	0.5229	-5.99	Stable during BTC-specific breakout lookback test. Panic profile unchanged.
+3e81678	evolve	RangeExpansionBreakout	0.4422	-3.97	Added BTC-only 48h prior high while AVAX stays 96h and ETH/SOL stay 72h. Small clean improvement: Sharpe 0.438→0.442, profit 21.44→21.68, BTC profit 2.07→2.30 with other sleeves unchanged. Kept.
+a059c31	evolve	LeaderVolumeMomentum	0.6102	-4.74	Added BTC-only own ROC>8 gate while other active pairs stay ROC>7. Sharpe/profit eased slightly, but DD improved -7.62→-4.74 and Calmar 20.5→32.5 with BTC pf improving. Kept as a superior risk profile.
+a059c31	stable	PanicReboundMTF	0.5229	-5.99	Stable during Leader BTC-specific ROC gate test. Panic profile unchanged.
+a059c31	stable	RangeExpansionBreakout	0.4422	-3.97	Stable during Leader BTC-specific ROC gate test. Breakout profile unchanged.
+2b2a706	stable	LeaderVolumeMomentum	0.6102	-4.74	Stable during BTC-specific panic RSI gate test. Momentum profile unchanged with improved DD/Calmar profile.
+2b2a706	evolve	PanicReboundMTF	0.5433	-5.24	Added BTC-only local RSI<30 gate. Improvement: Sharpe 0.523→0.543, profit 28.6→30.0, DD -5.99→-5.24; BTC profit/pf improved while ETH/BNB stayed intact. Kept.
+2b2a706	stable	RangeExpansionBreakout	0.4422	-3.97	Stable during BTC-specific panic RSI gate test. Breakout profile unchanged.
+fb82de9	stable	LeaderVolumeMomentum	0.6102	-4.74	Stable during discarded SOL 48h breakout lookback test. Momentum profile unchanged.
+fb82de9	stable	PanicReboundMTF	0.5433	-5.24	Stable during discarded SOL 48h breakout lookback test. Panic profile unchanged.
+fb82de9	evolve	RangeExpansionBreakout	0.4327	-3.97	DISCARDED (reset): applied 48h prior high to SOL as well as BTC. SOL profit fell 8.89→8.38 and aggregate Sharpe/profit slipped; SOL should stay at 72h.
+6611186	evolve	LeaderVolumeMomentum	0.5846	-5.55	DISCARDED (reset): tightened BTC-only ROC gate 8→9. BTC trades fell 12→8 and profit 9.9→5.5, dragging aggregate Sharpe/profit lower. BTC ROC8 remains preferred.
+6611186	stable	PanicReboundMTF	0.5433	-5.24	Stable during discarded Leader BTC ROC9 test. Panic profile unchanged.
+6611186	stable	RangeExpansionBreakout	0.4422	-3.97	Stable during discarded Leader BTC ROC9 test. Breakout profile unchanged.
+f1fd107	stable	LeaderVolumeMomentum	0.6102	-4.74	Stable during discarded panic BTC RSI29 test. Momentum profile unchanged.
+f1fd107	evolve	PanicReboundMTF	0.5024	-5.67	DISCARDED (reset): tightened BTC-only local RSI gate 30→29. BTC profit/trades fell too much and aggregate Sharpe/profit regressed; BTC RSI30 remains preferred.
+f1fd107	stable	RangeExpansionBreakout	0.4422	-3.97	Stable during discarded panic BTC RSI29 test. Breakout profile unchanged.
+8bdea06	stable	LeaderVolumeMomentum	0.6102	-4.74	Stable during discarded ETH 48h breakout lookback test. Momentum profile unchanged.
+8bdea06	stable	PanicReboundMTF	0.5433	-5.24	Stable during discarded ETH 48h breakout lookback test. Panic profile unchanged.
+8bdea06	evolve	RangeExpansionBreakout	0.4353	-3.97	DISCARDED (reset): applied 48h prior high to ETH. ETH profit/DD weakened and aggregate Sharpe/profit fell; ETH should stay at 72h while BTC uses 48h and AVAX uses 96h.
+1403a10	evolve	LeaderVolumeMomentum	0.6129	-4.74	Adjusted BTC-only ROC gate 8→7.5. Slightly improves Sharpe/profit over ROC8 while preserving the large DD/Calmar benefit; kept as the better risk-profile setting.
+1403a10	stable	PanicReboundMTF	0.5433	-5.24	Stable during Leader BTC ROC7.5 test. Panic profile unchanged.
+1403a10	stable	RangeExpansionBreakout	0.4422	-3.97	Stable during Leader BTC ROC7.5 test. Breakout profile unchanged.
+7e5e916	stable	LeaderVolumeMomentum	0.6129	-4.74	Stable during discarded panic BTC RSI31 test. Momentum profile unchanged.
+7e5e916	evolve	PanicReboundMTF	0.5150	-5.99	DISCARDED (reset): loosened BTC-only local RSI gate 30→31. BTC DD worsened and aggregate Sharpe/profit fell; BTC RSI30 remains preferred.
+7e5e916	stable	RangeExpansionBreakout	0.4422	-3.97	Stable during discarded panic BTC RSI31 test. Breakout profile unchanged.
+83c573e	stable	LeaderVolumeMomentum	0.6129	-4.74	Stable during discarded AVAX 120h breakout lookback test. Momentum profile unchanged.
+83c573e	stable	PanicReboundMTF	0.5433	-5.24	Stable during discarded AVAX 120h breakout lookback test. Panic profile unchanged.
+83c573e	evolve	RangeExpansionBreakout	0.4343	-3.97	DISCARDED (reset): lengthened AVAX prior high 96h→120h. AVAX profit fell 7.37→6.99 and aggregate Sharpe/profit slipped; AVAX 96h remains preferred.
+306fb6e	evolve	LeaderVolumeMomentum	0.6028	-6.83	DISCARDED (reset): adjusted BTC-only ROC 7.5→7.25. BTC extra trades worsened DD and aggregate Sharpe/profit; BTC ROC7.5 remains better risk-profile setting.
+306fb6e	stable	PanicReboundMTF	0.5433	-5.24	Stable during discarded Leader BTC ROC7.25 test. Panic profile unchanged.
+306fb6e	stable	RangeExpansionBreakout	0.4422	-3.97	Stable during discarded Leader BTC ROC7.25 test. Breakout profile unchanged.
+e6e43fe	stable	LeaderVolumeMomentum	0.6129	-4.74	Stable during discarded BNB-looser panic RSI test. Momentum profile unchanged.
+e6e43fe	evolve	PanicReboundMTF	0.5414	-5.72	DISCARDED (reset): raised base local RSI 32→34 so BNB could enter shallower panics while BTC/ETH stayed <30. BNB added trades but profit/pf fell and aggregate DD worsened; base RSI32 remains preferred.
+e6e43fe	stable	RangeExpansionBreakout	0.4422	-3.97	Stable during discarded BNB-looser panic RSI test. Breakout profile unchanged.
+caaae11	stable	LeaderVolumeMomentum	0.6129	-4.74	Stable during discarded breakout ROC4 test. Momentum profile unchanged.
+caaae11	stable	PanicReboundMTF	0.5433	-5.24	Stable during discarded breakout ROC4 test. Panic profile unchanged.
+caaae11	evolve	RangeExpansionBreakout	0.2383	-5.22	DISCARDED (reset): tightened breakout ROC 3→4. Sharpe/profit collapsed and BTC turned negative; ROC 3 is needed to catch viable breakouts before over-filtering.
+e71d939	evolve	LeaderVolumeMomentum	0.6132	-4.74	Adjusted BTC-only ROC gate 7.5→7.75. Slightly improves Sharpe/profit/pf with the same DD; kept as the better low-drawdown BTC gate.
+e71d939	stable	PanicReboundMTF	0.5433	-5.24	Stable during Leader BTC ROC7.75 test. Panic profile unchanged.
+e71d939	stable	RangeExpansionBreakout	0.4422	-3.97	Stable during Leader BTC ROC7.75 test. Breakout profile unchanged.
+16241bc	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during discarded BNB RSI31 panic test. Momentum profile unchanged.
+16241bc	evolve	PanicReboundMTF	0.4834	-5.37	DISCARDED (reset): added BNB-only local RSI<31. BNB profit fell 15.2→11.6 and aggregate Sharpe/profit dropped; BNB base RSI32 remains preferred.
+16241bc	stable	RangeExpansionBreakout	0.4422	-3.97	Stable during discarded BNB RSI31 panic test. Breakout profile unchanged.
+e8e1482	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during discarded breakout BTC ROC3 confirmation test. Momentum profile unchanged.
+e8e1482	stable	PanicReboundMTF	0.5433	-5.24	Stable during discarded breakout BTC ROC3 confirmation test. Panic profile unchanged.
+e8e1482	evolve	RangeExpansionBreakout	0.2220	-4.51	DISCARDED (reset): tightened BTC confirmation ROC 2→3. BTC improved, but ETH/SOL collapsed and aggregate Sharpe/profit fell badly; BTC ROC2 confirmation remains preferred for diversified breakout.
+e423c62	evolve	LeaderVolumeMomentum	0.6132	-4.74	DISCARDED (reset): adjusted BTC-only ROC 7.75→7.875, but metrics/trades were identical. Threshold is non-binding here; keep cleaner ROC7.75.
+e423c62	stable	PanicReboundMTF	0.5433	-5.24	Stable during neutral Leader BTC ROC7.875 test. Panic profile unchanged.
+e423c62	stable	RangeExpansionBreakout	0.4422	-3.97	Stable during neutral Leader BTC ROC7.875 test. Breakout profile unchanged.
+246962e	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during discarded panic exit RSI65 retest. Momentum profile unchanged.
+246962e	evolve	PanicReboundMTF	0.4506	-6.21	DISCARDED (reset): lowered exit RSI 66→65 after entry refinements. Exited too early across BTC/ETH/BNB; Sharpe/profit collapsed and DD worsened. Exit RSI66 remains preferred.
+246962e	stable	RangeExpansionBreakout	0.4422	-3.97	Stable during discarded panic exit RSI65 retest. Breakout profile unchanged.
+74a6848	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during neutral breakout ROC-exit test. Momentum profile unchanged.
+74a6848	stable	PanicReboundMTF	0.5433	-5.24	Stable during neutral breakout ROC-exit test. Panic profile unchanged.
+74a6848	evolve	RangeExpansionBreakout	0.4422	-3.97	DISCARDED (reset): slowed ROC exit -3→-4, but metrics/trades were identical. ROC exit is non-binding under current EMA/RSI exits; keep original -3 for clarity.
+9fc3bad	evolve	LeaderVolumeMomentum	0.5610	-5.58	DISCARDED (reset): slowed exit ROC -4→-4.5. Sharpe/profit/DD all worsened, especially AVAX/BTC; ROC -4 remains preferred with BTC ROC7.75 gate.
+9fc3bad	stable	PanicReboundMTF	0.5433	-5.24	Stable during discarded Leader exit -4.5 test. Panic profile unchanged.
+9fc3bad	stable	RangeExpansionBreakout	0.4422	-3.97	Stable during discarded Leader exit -4.5 test. Breakout profile unchanged.
+a270f6f	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during discarded panic exit RSI67 retest. Momentum profile unchanged.
+a270f6f	evolve	PanicReboundMTF	0.5083	-6.83	DISCARDED (reset): raised exit RSI 66→67 after entry refinements. ETH improved, but BNB weakened and DD worsened; aggregate Sharpe/profit fell. Exit RSI66 remains bracketed best.
+a270f6f	stable	RangeExpansionBreakout	0.4422	-3.97	Stable during discarded panic exit RSI67 retest. Breakout profile unchanged.
+899e49b	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during discarded breakout RSI84 exit test. Momentum profile unchanged.
+899e49b	stable	PanicReboundMTF	0.5433	-5.24	Stable during discarded breakout RSI84 exit test. Panic profile unchanged.
+899e49b	evolve	RangeExpansionBreakout	0.4064	-3.97	DISCARDED (reset): loosened RSI exit 82→84. BTC/ETH improved but SOL/AVAX weakened and aggregate Sharpe/profit fell; RSI82 remains bracketed against 80, 84, and no-exit.
+74a6e0b	evolve	LeaderVolumeMomentum	0.5596	-4.74	DISCARDED (reset): added AVAX-only ROC>8. AVAX profit collapsed 27.5→16.7 and aggregate Sharpe/profit fell; AVAX should stay at ROC>7.
+74a6e0b	stable	PanicReboundMTF	0.5433	-5.24	Stable during discarded Leader AVAX ROC8 test. Panic profile unchanged.
+74a6e0b	stable	RangeExpansionBreakout	0.4422	-3.97	Stable during discarded Leader AVAX ROC8 test. Breakout profile unchanged.
+b76af22	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during discarded panic 4h RSI55 test. Momentum profile unchanged.
+b76af22	evolve	PanicReboundMTF	0.4400	-7.54	DISCARDED (reset): loosened 4h RSI gate 50→55. Added noisy entries across BTC/ETH/BNB; Sharpe/profit fell and DD worsened sharply. 4h RSI50 remains preferred.
+b76af22	stable	RangeExpansionBreakout	0.4422	-3.97	Stable during discarded panic 4h RSI55 test. Breakout profile unchanged.
+1afb3ef	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during discarded BNB breakout retest. Momentum profile unchanged.
+1afb3ef	stable	PanicReboundMTF	0.5433	-5.24	Stable during discarded BNB breakout retest. Panic profile unchanged; BNB remains good only for mean reversion.
+1afb3ef	evolve	RangeExpansionBreakout	0.3824	-3.97	DISCARDED (reset): re-enabled BNB under current lookbacks. BNB lost -3.7% with pf 0.24 and aggregate Sharpe/profit fell. BNB exclusion remains mandatory for breakout.
+73868d8	evolve	LeaderVolumeMomentum	0.5627	-4.74	DISCARDED (reset): added SOL-only ROC>8. SOL profit fell 26.2→19.4 and aggregate Sharpe/profit dropped; SOL should stay at ROC>7.
+73868d8	stable	PanicReboundMTF	0.5433	-5.24	Stable during discarded Leader SOL ROC8 test. Panic profile unchanged.
+73868d8	stable	RangeExpansionBreakout	0.4422	-3.97	Stable during discarded Leader SOL ROC8 test. Breakout profile unchanged.
+ddf45d8	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during discarded stricter panic daily-regime test. Momentum profile unchanged.
+ddf45d8	evolve	PanicReboundMTF	0.5024	-5.57	DISCARDED (reset): required close > 1d EMA50 * 1.02. PF improved but Sharpe/profit fell and DD worsened; BNB was over-filtered. Plain close > 1d EMA50 remains preferred.
+ddf45d8	stable	RangeExpansionBreakout	0.4422	-3.97	Stable during discarded stricter panic daily-regime test. Breakout profile unchanged.
+0305c70	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during discarded breakout EMA34 exit test. Momentum profile unchanged.
+0305c70	stable	PanicReboundMTF	0.5433	-5.24	Stable during discarded breakout EMA34 exit test. Panic profile unchanged.
+0305c70	evolve	RangeExpansionBreakout	0.4101	-5.00	DISCARDED (reset): changed local EMA exit from EMA21 to EMA34. Profit ticked up but Sharpe fell and DD worsened, with BTC/ETH weakening. EMA21 exit remains preferred.
+762cd22	evolve	LeaderVolumeMomentum	0.5793	-4.74	DISCARDED (reset): added ETH-only ROC>8. ETH profit fell 24.4→18.3 and aggregate Sharpe/profit dropped; ETH should stay at ROC>7.
+762cd22	stable	PanicReboundMTF	0.5433	-5.24	Stable during discarded Leader ETH ROC8 test. Panic profile unchanged.
+762cd22	stable	RangeExpansionBreakout	0.4422	-3.97	Stable during discarded Leader ETH ROC8 test. Breakout profile unchanged.
+f1cc58c	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during discarded panic EMA50 distance guard test. Momentum profile unchanged.
+f1cc58c	evolve	PanicReboundMTF	0.4324	-6.75	DISCARDED (reset): tightened local EMA guard close>ema50*0.92→0.95. ETH collapsed and aggregate Sharpe/profit/DD worsened; 0.92 remains preferred.
+f1cc58c	stable	RangeExpansionBreakout	0.4422	-3.97	Stable during discarded panic EMA50 distance guard test. Breakout profile unchanged.
+70b0df4	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during breakout EMA13 exit test. Momentum profile unchanged.
+70b0df4	stable	PanicReboundMTF	0.5433	-5.24	Stable during breakout EMA13 exit test. Panic profile unchanged.
+70b0df4	evolve	RangeExpansionBreakout	0.4826	-3.55	Changed local EMA exit from EMA21 to EMA13. Sharpe 0.442→0.483, DD -3.97→-3.55, pf 1.64→1.73; BTC/AVAX quality improved with only tiny profit giveback. Kept.
+3dc71c6	evolve	LeaderVolumeMomentum	0.6026	-4.74	DISCARDED (reset): added BTC-only volume>1.10× gate. Removed one useful BTC trade and lowered aggregate Sharpe/profit; base volume 1.05× remains enough for BTC.
+3dc71c6	stable	PanicReboundMTF	0.5433	-5.24	Stable during discarded Leader BTC volume test. Panic profile unchanged.
+3dc71c6	stable	RangeExpansionBreakout	0.4826	-3.55	Stable during discarded Leader BTC volume test. Breakout profile unchanged with EMA13 exit.
+17d2079	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during panic EMA50 distance 0.90 test. Momentum profile unchanged.
+17d2079	evolve	PanicReboundMTF	0.6074	-5.24	Loosened local EMA guard close>ema50*0.92→0.90. Strong improvement: Sharpe 0.543→0.607, profit 30.0→36.1, pf 1.75→1.86; BNB profit jumped while DD stayed flat. Kept.
+17d2079	stable	RangeExpansionBreakout	0.4826	-3.55	Stable during panic EMA50 distance 0.90 test. Breakout profile unchanged.
+fb9a412	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during discarded breakout EMA8 exit test. Momentum profile unchanged.
+fb9a412	stable	PanicReboundMTF	0.6074	-5.24	Stable during discarded breakout EMA8 exit test. Panic profile unchanged with EMA guard 0.90.
+fb9a412	evolve	RangeExpansionBreakout	0.3591	-3.31	DISCARDED (reset): changed EMA13 exit to EMA8. DD improved but profit/Shapre collapsed, especially SOL. EMA13 remains preferred.
+83db0fd	evolve	LeaderVolumeMomentum	0.6129	-4.74	DISCARDED (reset): adjusted BTC-only ROC 7.75→7.625. Reverted to the weaker 7.5-like profile; ROC7.75 remains preferred.
+83db0fd	stable	PanicReboundMTF	0.6074	-5.24	Stable during discarded Leader BTC ROC7.625 test. Panic profile unchanged.
+83db0fd	stable	RangeExpansionBreakout	0.4826	-3.55	Stable during discarded Leader BTC ROC7.625 test. Breakout profile unchanged.
+1db4414	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during panic EMA50 distance 0.88 test. Momentum profile unchanged.
+1db4414	evolve	PanicReboundMTF	0.6425	-4.72	Loosened local EMA guard 0.90→0.88. Strong improvement: Sharpe 0.607→0.643, profit 36.1→38.8, DD -5.24→-4.72; BNB profit expanded to 24.2 with pf 4.48. Kept.
+1db4414	stable	RangeExpansionBreakout	0.4826	-3.55	Stable during panic EMA50 distance 0.88 test. Breakout profile unchanged.
+f4ed2a7	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during discarded breakout EMA10 exit test. Momentum profile unchanged.
+f4ed2a7	stable	PanicReboundMTF	0.6425	-4.72	Stable during discarded breakout EMA10 exit test. Panic profile unchanged.
+f4ed2a7	evolve	RangeExpansionBreakout	0.4163	-3.11	DISCARDED (reset): changed EMA13 exit to EMA10. DD improved, but profit and Sharpe fell materially as SOL was clipped. EMA13 remains preferred.
+1b2f65c	evolve	LeaderVolumeMomentum	0.6026	-4.74	DISCARDED (reset): tightened BTC RSI confirmation 50→55. Removed a useful BTC trade and lowered aggregate Sharpe/profit; BTC RSI50 remains preferred.
+1b2f65c	stable	PanicReboundMTF	0.6425	-4.72	Stable during discarded Leader BTC RSI55 test. Panic profile unchanged.
+1b2f65c	stable	RangeExpansionBreakout	0.4826	-3.55	Stable during discarded Leader BTC RSI55 test. Breakout profile unchanged.
+fdbd6a5	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during neutral panic EMA50 distance 0.86 test. Momentum profile unchanged.
+fdbd6a5	evolve	PanicReboundMTF	0.6425	-4.72	DISCARDED (reset): loosened EMA50 distance 0.88→0.86, but metrics/trades were identical. 0.86 is non-binding; keep clearer 0.88.
+fdbd6a5	stable	RangeExpansionBreakout	0.4826	-3.55	Stable during neutral panic EMA50 distance 0.86 test. Breakout profile unchanged.
+d4e2680	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during discarded breakout EMA15 exit test. Momentum profile unchanged.
+d4e2680	stable	PanicReboundMTF	0.6425	-4.72	Stable during discarded breakout EMA15 exit test. Panic profile unchanged.
+d4e2680	evolve	RangeExpansionBreakout	0.4521	-3.29	DISCARDED (reset): changed EMA13 exit to EMA15. DD improved slightly, but Sharpe/profit fell; EMA13 remains best tested exit speed.
+8479dc8	evolve	LeaderVolumeMomentum	0.6132	-4.74	DISCARDED (reset): loosened BTC RSI confirmation 50→45, but metrics/trades were identical. RSI45 is non-binding; keep clearer RSI50.
+8479dc8	stable	PanicReboundMTF	0.6425	-4.72	Stable during neutral Leader BTC RSI45 test. Panic profile unchanged.
+8479dc8	stable	RangeExpansionBreakout	0.4826	-3.55	Stable during neutral Leader BTC RSI45 test. Breakout profile unchanged.
+815715e	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during neutral panic EMA50 distance 0.80 test. Momentum profile unchanged.
+815715e	evolve	PanicReboundMTF	0.6425	-4.72	DISCARDED (reset): loosened EMA50 distance 0.88→0.80, but metrics/trades were identical. Lower values are non-binding; keep 0.88 as the meaningful discovered boundary.
+815715e	stable	RangeExpansionBreakout	0.4826	-3.55	Stable during neutral panic EMA50 distance 0.80 test. Breakout profile unchanged.
+917f17c	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during breakout EMA12 exit test. Momentum profile unchanged.
+917f17c	stable	PanicReboundMTF	0.6425	-4.72	Stable during breakout EMA12 exit test. Panic profile unchanged.
+917f17c	evolve	RangeExpansionBreakout	0.5341	-3.55	Changed EMA13 exit to EMA12. Strong improvement: Sharpe 0.483→0.534, profit 21.6→24.0, pf 1.73→1.85 with DD flat; BTC/SOL/AVAX all improved. Kept.
+220260a	evolve	LeaderVolumeMomentum	0.6132	-4.74	DISCARDED (reset): added ETH-only volume>1.10× gate, but metrics/trades were identical. Condition is non-binding; keep simpler global volume 1.05×.
+220260a	stable	PanicReboundMTF	0.6425	-4.72	Stable during neutral Leader ETH volume test. Panic profile unchanged.
+220260a	stable	RangeExpansionBreakout	0.5341	-3.55	Stable during neutral Leader ETH volume test. Breakout profile unchanged with EMA12 exit.
+816656e	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during discarded panic volume 1.25 retest. Momentum profile unchanged.
+816656e	evolve	PanicReboundMTF	0.6413	-4.72	DISCARDED (reset): retested volume 1.15×→1.25× after EMA guard 0.88. Profit/PF rose trivially, but Sharpe/Sortino slipped; not enough improvement to replace risk-adjusted-best 1.15×.
+816656e	stable	RangeExpansionBreakout	0.5341	-3.55	Stable during discarded panic volume 1.25 retest. Breakout profile unchanged.
+efc97e2	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during discarded breakout EMA11 exit test. Momentum profile unchanged.
+efc97e2	stable	PanicReboundMTF	0.6425	-4.72	Stable during discarded breakout EMA11 exit test. Panic profile unchanged.
+efc97e2	evolve	RangeExpansionBreakout	0.5003	-2.96	DISCARDED (reset): changed EMA12 exit to EMA11. DD improved, but Sharpe/profit/pf fell materially, mostly from SOL clipping. EMA12 remains preferred.
+4f439ee	evolve	LeaderVolumeMomentum	0.6030	-4.74	DISCARDED (reset): added AVAX-only volume>1.10× gate. Removed a useful AVAX trade and lowered aggregate Sharpe/profit; global volume 1.05× remains preferred.
+4f439ee	stable	PanicReboundMTF	0.6425	-4.72	Stable during discarded Leader AVAX volume test. Panic profile unchanged.
+4f439ee	stable	RangeExpansionBreakout	0.5341	-3.55	Stable during discarded Leader AVAX volume test. Breakout profile unchanged.
+1e8c5bb	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during panic volume 1.10 midpoint test. Momentum profile unchanged.
+1e8c5bb	evolve	PanicReboundMTF	0.6558	-4.72	Lowered volume gate 1.15×→1.10×. Improvement: Sharpe 0.643→0.656, profit 38.8→39.3, pf 1.93→1.94 with DD flat; ETH and BNB improved. Kept.
+1e8c5bb	stable	RangeExpansionBreakout	0.5341	-3.55	Stable during panic volume 1.10 midpoint test. Breakout profile unchanged.
+ee9d84d	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable during discarded breakout volume 1.10 retest. Momentum profile unchanged.
+ee9d84d	stable	PanicReboundMTF	0.6558	-4.72	Stable during discarded breakout volume 1.10 retest. Panic profile unchanged with volume 1.10×.
+ee9d84d	evolve	RangeExpansionBreakout	0.5239	-3.10	DISCARDED (reset): loosened volume 1.15×→1.10× after EMA12 exit. DD/Calmar improved but Sharpe/profit fell; keep volume 1.15× for better risk-adjusted return.
+6036683	evolve	LeaderVolumeMomentum	0.6120	-4.74	DISCARDED (reset): added SOL-only volume>1.10× gate. Metrics nearly flat but Sharpe/profit slightly below peak 0.6132; removed a useful SOL trade. Keep simpler global volume 1.05×.
+6036683	stable	PanicReboundMTF	0.6558	-4.72	Stable at panic peak during discarded Leader SOL volume test.
+6036683	stable	RangeExpansionBreakout	0.5341	-3.55	Stable at breakout peak during discarded Leader SOL volume test.
+ce5937f	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable at momentum peak during discarded BNB panic exit test.
+ce5937f	evolve	PanicReboundMTF	0.6036	-6.67	DISCARDED (reset): BNB-specific exit RSI 67 while BTC/ETH stayed 66. BNB profit fell 24.2→21.7 and aggregate Sharpe 0.656→0.604; BNB also wants RSI66 exit in this profile.
+ce5937f	stable	RangeExpansionBreakout	0.5341	-3.55	Stable at breakout peak during discarded BNB panic exit test.
+08f0f3e	stable	LeaderVolumeMomentum	0.6132	-4.74	Stable at momentum peak in final round.
+08f0f3e	stable	PanicReboundMTF	0.6558	-4.72	Stable at panic mean-reversion peak in final round.
+08f0f3e	evolve	RangeExpansionBreakout	0.4593	-3.56	DISCARDED (reset): disabled ETH entries. PF improved, but Sharpe 0.534→0.459 and profit 24.0→22.1; ETH is weak but diversifies breakout path. Keep ETH active.
