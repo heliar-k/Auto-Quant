@@ -71,6 +71,12 @@ class SuperTrendPullback(IStrategy):
         if metadata.get("pair") == "AVAX/USDT":
             entry_condition &= False
 
+        if metadata.get("pair") == "ETH/USDT":
+            entry_condition &= (
+                (dataframe["rsi"] >= 35)
+                & (dataframe["volume"] > dataframe["vol_ma"] * 1.3)
+            )
+
         dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
 
