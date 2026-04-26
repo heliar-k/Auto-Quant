@@ -71,7 +71,7 @@ class MomentumADX(IStrategy):
             & (dataframe["adx"] > 25)
             & (dataframe["plus_di"] > dataframe["minus_di"])
             & (dataframe["close"] > dataframe["ema50"])
-            & (dataframe["roc"] > 6.0)
+            & (dataframe["roc"] > 5.0)
             & (dataframe["btc_usdt_roc_1h"] > 3.0)
             & (dataframe["volume"] > dataframe["vol_ma"] * 1.2)
         )
@@ -80,14 +80,14 @@ class MomentumADX(IStrategy):
             entry_condition &= False
 
         if metadata.get("pair") in ("ETH/USDT", "AVAX/USDT"):
-            entry_condition &= dataframe["roc"] > 8.0
+            entry_condition &= dataframe["roc"] > 7.0
 
         dataframe.loc[entry_condition, "enter_long"] = 1
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
-            (dataframe["adx"] < 20)
+            (dataframe["adx"] < 22)
             | (dataframe["roc"] < -4.0),
             "exit_long",
         ] = 1
