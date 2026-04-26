@@ -51,6 +51,7 @@ class MomentumMTF(IStrategy):
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["roc"] = ta.ROC(dataframe, timeperiod=20)
+        dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
         dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
         dataframe["vol_ma"] = dataframe["volume"].rolling(20).mean()
         return dataframe
@@ -78,5 +79,9 @@ class MomentumMTF(IStrategy):
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe.loc[dataframe["roc"] < -3.0, "exit_long"] = 1
+        dataframe.loc[
+            (dataframe["close"] < dataframe["ema21"])
+            | (dataframe["roc"] < -3.0),
+            "exit_long",
+        ] = 1
         return dataframe
