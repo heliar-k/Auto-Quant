@@ -11,7 +11,7 @@ Parent: root
 Created: 5799a6f
 Status: active
 Uses MTF: yes (4h EMA trend, 1d EMA200 regime)
-Exit Mechanism: close < EMA20 (Keltner midline break)
+Exit Mechanism: close < EMA12 (fast trend break) OR ROC < -2.0 (momentum failure)
 Exit Rationale: Keltner breakouts represent short-duration directional bursts.
 Exiting at the midline (EMA20) captures the expansion's core move — by the time
 price reaches the lower band, the breakout energy has already dissipated. Fast
@@ -52,6 +52,7 @@ class KeltnerBreakout(IStrategy):
         return dataframe
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe["ema12"] = ta.EMA(dataframe, timeperiod=12)
         dataframe["ema20"] = ta.EMA(dataframe, timeperiod=20)
         atr = ta.ATR(dataframe, timeperiod=10)
         dataframe["kc_upper"] = dataframe["ema20"] + 2.5 * atr
@@ -81,7 +82,7 @@ class KeltnerBreakout(IStrategy):
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
-            (dataframe["close"] < dataframe["ema20"])
+            (dataframe["close"] < dataframe["ema12"])
             | (dataframe["roc"] < -2.0),
             "exit_long",
         ] = 1
